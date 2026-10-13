@@ -1,0 +1,580 @@
+<title>Cams and Cogs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --paper:#EDF0EB; --panel:#F7F8F4; --ink:#1D2622; --muted:#5E6B66; --line:#C8CFC8; --grid:rgba(79,100,112,0.10);
+  --brass:#A8721C; --brass-soft:rgba(168,114,28,0.14); --steel:#4F6470; --steel-soft:rgba(79,100,112,0.12);
+  --warn:#B4472E; --warn-soft:rgba(180,71,46,0.12); --ok:#3F7D58; --ok-soft:rgba(63,125,88,0.12);
+  --display:"IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+    --brass:#D7A548; --brass-soft:rgba(215,165,72,0.16); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.14);
+    --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+  --brass:#D7A548; --brass-soft:rgba(215,165,72,0.16); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.14);
+  --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+}
+* { box-sizing:border-box; }
+body { background:var(--paper); color:var(--ink); font:15px/1.55 var(--sans); padding-inline:16px; padding-block:20px 60px; }
+.wrap { max-width:1240px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 24px; border-bottom:1px solid var(--line); padding-bottom:12px; }
+h1 { font:400 2.1rem/1.1 var(--display); margin:0; letter-spacing:.01em; text-wrap:balance; }
+header p { margin:0; color:var(--muted); max-width:62ch; }
+h2 { font:600 .78rem/1.2 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin:0; }
+.grid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:20px; align-items:start; }
+@media (max-width:900px) { .grid { grid-template-columns:minmax(0,1fr); } .stage { position:static; } }
+.stage { position:sticky; top:calc(env(safe-area-inset-top, 0px) + 12px); background:var(--panel); border:1px solid var(--line); border-radius:6px; display:flex; flex-direction:column; }
+.stage canvas { display:block; width:100%; }
+.transport { display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:10px 14px; border-top:1px solid var(--line); }
+.readout { font:500 .9rem var(--mono); font-variant-numeric:tabular-nums; color:var(--muted); }
+.readout b { color:var(--ink); font-weight:500; }
+button { font:500 .85rem var(--sans); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:4px; padding:.35rem .8rem; cursor:pointer; }
+button:hover { border-color:var(--brass); }
+button.primary { background:var(--brass); border-color:var(--brass); color:var(--paper); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--brass); outline-offset:2px; }
+.icon-btn { padding:.15rem .5rem; color:var(--muted); }
+label.inline { display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--muted); }
+input[type=range] { accent-color:var(--brass); width:120px; }
+input[type=number], select { font:500 .85rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:.25rem .35rem; width:4.6rem; font-variant-numeric:tabular-nums; }
+select { width:auto; font-family:var(--sans); }
+.side { display:flex; flex-direction:column; gap:16px; }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px; display:flex; flex-direction:column; gap:12px; }
+.panel-head { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+.fields { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:10px 14px; }
+.field { display:flex; flex-direction:column; gap:3px; font-size:.78rem; color:var(--muted); }
+.field input { width:100%; }
+.note { font-size:.85rem; color:var(--muted); margin:0; }
+.note b { color:var(--ink); font-weight:600; }
+.cam-name { font:400 1.25rem/1.2 var(--display); }
+.cam-name .swatch { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:middle; }
+.steps { display:flex; flex-direction:column; gap:6px; }
+.step { display:grid; grid-template-columns:4.6rem auto 4.6rem auto 4.6rem auto 1fr; align-items:center; gap:6px; font-size:.85rem; }
+.step .kind { font-weight:600; font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; }
+.step .kind.rise { color:var(--brass); } .step .kind.fall { color:var(--steel); } .step .kind.hold { color:var(--muted); }
+.step .rm { justify-self:end; }
+.step.auto { color:var(--muted); font-style:italic; }
+.step.auto .kind { font-style:normal; }
+.step.auto > :last-child { grid-column:6 / -1; }
+.chart { width:100%; height:92px; display:block; }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { font:500 .74rem var(--sans); padding:.15rem .5rem; border-radius:999px; background:var(--ok-soft); color:var(--ok); }
+.chip.warn { background:var(--warn-soft); color:var(--warn); }
+.chip.info { background:var(--steel-soft); color:var(--steel); }
+.specs-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.85rem; font-variant-numeric:tabular-nums; }
+th, td { text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { font-weight:600; color:var(--muted); font-size:.74rem; text-transform:uppercase; letter-spacing:.06em; }
+td.num { font-family:var(--mono); text-align:right; }
+th.num { text-align:right; }
+.bottom { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:20px; align-items:start; }
+@media (max-width:900px) { .bottom { grid-template-columns:minmax(0,1fr); } }
+textarea { width:100%; height:120px; font:.75rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:8px; }
+.status { font-size:.82rem; color:var(--ok); min-height:1.2em; margin:0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Cams &amp; Cogs</h1>
+    <p>Describe what each part of the figure should do over one show. The cams, gears and cutting files are worked out for you. The example is a tipping-hat gentleman: edit any number to change it.</p>
+  </header>
+
+  <div class="grid">
+    <section class="stage" aria-label="Animated mechanism">
+      <canvas id="machine" aria-label="Animation of the gear train, cam stack, followers and figure"></canvas>
+      <div class="transport">
+        <button id="play" class="primary">Pause</button>
+        <label class="inline" for="speed">Show length <input id="speed" type="range" min="2" max="20" step="1" value="8"> <span class="readout" id="speedOut">8 s</span></label>
+        <span class="readout">Cam angle <b id="angleOut">0°</b></span>
+        <span class="readout">Crank turn <b id="crankOut">1 of 3</b></span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="driveHead">
+        <div class="panel-head"><h2 id="driveHead">Drive train</h2></div>
+        <div class="fields">
+          <label class="field" for="z1">Crank gear teeth<input id="z1" type="number" min="8" max="120" step="1"></label>
+          <label class="field" for="z2">Cam-shaft gear teeth<input id="z2" type="number" min="8" max="200" step="1"></label>
+          <label class="field" for="mod">Module (mm per tooth)<input id="mod" type="number" min="0.5" max="5" step="0.25"></label>
+          <label class="field" for="roller">Roller diameter (mm)<input id="roller" type="number" min="0" max="20" step="0.5"></label>
+        </div>
+        <p class="note" id="driveNote"></p>
+        <div class="chips" id="driveChips"></div>
+      </section>
+      <div id="cams" class="side"></div>
+    </aside>
+  </div>
+
+  <div class="bottom">
+    <section class="panel" aria-labelledby="specHead">
+      <div class="panel-head"><h2 id="specHead">Part sizes</h2><button id="copySpec">Copy sizes</button></div>
+      <div class="specs-wrap"><table id="specs"></table></div>
+    </section>
+    <section class="panel" aria-labelledby="exportHead">
+      <div class="panel-head"><h2 id="exportHead">Cutting file</h2></div>
+      <p class="note">One SVG at true millimetre size: every cam and both gears, with 4 mm shaft holes. Red lines are cuts; blue lines are engraved start marks and labels. It opens in LightBurn, Inkscape or a Glowforge, or print it at 100% as a paper template.</p>
+      <div class="chips"><button id="copySvg" class="primary">Copy SVG</button><button id="dlSvg">Download SVG</button><button id="reset">Reset to example</button></div>
+      <p class="status" id="status" role="status"></p>
+      <textarea id="svgOut" hidden readonly aria-label="SVG source"></textarea>
+    </section>
+  </div>
+</div>
+
+<script>
+'use strict';
+const TAU = Math.PI * 2, DEG = Math.PI / 180;
+
+/* ---------- Motion laws (adapted from MHSGhali/Linkage-Design and EkaEva/CamForge, MIT) ---------- */
+const LAWS = {
+  cycloidal: { label: 'Cycloidal (smoothest)', f: t => t - Math.sin(TAU * t) / TAU },
+  harmonic:  { label: 'Harmonic', f: t => (1 - Math.cos(Math.PI * t)) / 2 },
+  parabolic: { label: 'Constant acceleration', f: t => t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) ** 2 },
+  uniform:   { label: 'Uniform (jerky)', f: t => t },
+};
+
+/* ---------- Involute gear outline (adapted from MHSGhali/Linkage-Design, MIT) ---------- */
+const inv = a => Math.tan(a) - a;
+function gearOutline({ m, z, pa = 20 * DEG, backlash = 0.1, flank = 6 }) {
+  const rp = m * z / 2, rb = rp * Math.cos(pa), ra = rp + m, rf = Math.max(rp - 1.25 * m, 0.3 * rp);
+  const half = Math.PI / (2 * z) - backlash / (2 * rp);
+  const fa = r => half + inv(pa) - (r > rb ? inv(Math.acos(rb / r)) : 0);
+  const solve = (want, lo, hi) => { for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; fa(mid) > want ? lo = mid : hi = mid; } return (lo + hi) / 2; };
+  const pitchAng = TAU / z;
+  let r0 = Math.max(rb, rf);
+  if (fa(r0) > pitchAng / 2 - 0.02) r0 = solve(pitchAng / 2 - 0.02, r0, rp);
+  let r1 = ra; const land = 0.2 * m * 0.5 / ra;
+  if (fa(ra) < land) r1 = solve(land, rp, ra);
+  const P = (r, a) => [r * Math.cos(a), r * Math.sin(a)], out = [];
+  const drop = r0 > rf + 1e-9, a0 = fa(r0), a1 = fa(r1);
+  for (let k = 0; k < z; k++) {
+    const c = pitchAng * k;
+    if (drop) out.push(P(rf, c - a0));
+    for (let i = 0; i < flank; i++) { const r = r0 + (r1 - r0) * i / (flank - 1); out.push(P(r, c - fa(r))); }
+    for (let i = 1; i <= 3; i++) out.push(P(r1, c - a1 + 2 * a1 * i / 4));
+    for (let i = flank - 1; i >= 0; i--) { const r = r0 + (r1 - r0) * i / (flank - 1); out.push(P(r, c + fa(r))); }
+    if (drop) out.push(P(rf, c + a0));
+    for (let i = 1; i <= 4; i++) out.push(P(rf, c + a0 + (pitchAng - 2 * a0) * i / 5));
+  }
+  return { pts: out, rp, ra, rf };
+}
+
+/* ---------- Example: the tipping-hat gentleman ---------- */
+const EXAMPLE = {
+  z1: 15, z2: 45, module: 1.5, roller: 8, showSeconds: 8,
+  cams: [
+    { name: 'Arm', part: 'arm', base: 30, law: 'cycloidal', steps: [{ deg: 40, to: 0 }, { deg: 100, to: 14 }, { deg: 90, to: 14 }, { deg: 100, to: 0 }] },
+    { name: 'Hat', part: 'hat', base: 26, law: 'cycloidal', steps: [{ deg: 140, to: 0 }, { deg: 60, to: 8 }, { deg: 10, to: 8 }, { deg: 60, to: 0 }] },
+    { name: 'Head', part: 'head', base: 24, law: 'cycloidal', steps: [{ deg: 255, to: 0 }, { deg: 50, to: 6 }, { deg: 50, to: 0 }] },
+  ],
+};
+const STORE = 'cams-and-cogs-v2';
+let state;
+try { state = JSON.parse(localStorage.getItem(STORE)) || null; } catch (e) { state = null; }
+if (!state || !Array.isArray(state.cams)) state = structuredClone(EXAMPLE);
+function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* storage unavailable: fine */ } }
+
+/* ---------- Derived geometry ---------- */
+const CAM_COLORS = ['brass', 'steel', 'ok'];
+let derived = null;
+
+function buildLift(cam) {
+  const total = cam.steps.reduce((s, x) => s + Math.max(0, +x.deg || 0), 0);
+  const k = total > 360 ? 360 / total : 1;
+  const segs = []; let a = 0, h = 0;
+  for (const s of cam.steps) {
+    const d = Math.max(0, +s.deg || 0) * k * DEG, to = Math.max(0, +s.to || 0);
+    if (d > 0) segs.push({ a0: a, a1: a + d, h0: h, h1: to });
+    a += d; h = to;
+  }
+  const leftover = TAU - a;
+  let noReturn = false;
+  if (leftover > 1e-6) segs.push({ a0: a, a1: TAU, h0: h, h1: 0, auto: true });
+  else if (h > 1e-6) noReturn = true;
+  const L = LAWS[cam.law]?.f || LAWS.cycloidal.f;
+  const f = th => {
+    th = ((th % TAU) + TAU) % TAU;
+    for (const s of segs) if (th < s.a1 || s === segs[segs.length - 1]) {
+      const t = Math.min(1, Math.max(0, (th - s.a0) / (s.a1 - s.a0 || 1)));
+      return s.h0 + (s.h1 - s.h0) * L(t);
+    }
+    return 0;
+  };
+  return { f, segs, scaled: k < 1, total, noReturn, leftoverDeg: leftover / DEG, finalH: h };
+}
+
+/* Cam in its own frame, start-of-show at the top (where the follower sits). */
+function buildCam(cam, rollerR) {
+  const lift = buildLift(cam);
+  const pitch = psi => cam.base + lift.f(psi - Math.PI / 2);
+  const n = 360, h = 1e-4, surface = [];
+  let maxPA = 0, maxR = 0, maxLift = 0;
+  for (let i = 0; i < n; i++) {
+    const p = TAU * i / n, r = pitch(p), dr = (pitch(p + h) - pitch(p - h)) / (2 * h);
+    const c = Math.cos(p), s = Math.sin(p);
+    const tx = dr * c - r * s, ty = dr * s + r * c, tl = Math.hypot(tx, ty);
+    const nx = ty / tl, ny = -tx / tl;
+    surface.push([r * c - nx * rollerR, r * s - ny * rollerR]);
+    maxPA = Math.max(maxPA, Math.atan(Math.abs(dr) / r));
+    maxR = Math.max(maxR, r); maxLift = Math.max(maxLift, r - cam.base);
+  }
+  let undercut = cam.base - rollerR < 4;
+  for (let i = 0; i < n && !undercut; i++) {
+    const a = surface[i], b = surface[(i + 1) % n], d = surface[(i + 2) % n];
+    const e0 = [b[0] - a[0], b[1] - a[1]], e1 = [d[0] - b[0], d[1] - b[1]];
+    const l0 = Math.hypot(...e0), l1 = Math.hypot(...e1);
+    if (l0 > 1e-9 && l1 > 1e-9 && (e0[0] * e1[0] + e0[1] * e1[1]) / (l0 * l1) < 0) undercut = true;
+  }
+  const outerR = Math.max(...surface.map(p => Math.hypot(...p)));
+  return { lift, surface, maxPA: maxPA / DEG, maxR, outerR, maxLift, undercut, rollerR };
+}
+
+function derive() {
+  const z1 = clampInt(state.z1, 8, 120), z2 = clampInt(state.z2, 8, 200), m = clampNum(state.module, 0.5, 5);
+  const rollerR = clampNum(state.roller, 0, 20) / 2;
+  const g1 = gearOutline({ m, z: z1 }), g2 = gearOutline({ m, z: z2 });
+  const cams = state.cams.map(c => buildCam(c, rollerR));
+  derived = { z1, z2, m, rollerR, g1, g2, cams, cd: m * (z1 + z2) / 2, ratio: z2 / z1 };
+  layout();
+}
+const clampInt = (v, a, b) => Math.min(b, Math.max(a, Math.round(+v || a)));
+const clampNum = (v, a, b) => Math.min(b, Math.max(a, +v || a));
+
+/* World layout in millimetres, y up. Cams sit on one shaft, drawn side by side (an exploded stack). */
+let L = null;
+function layout() {
+  const d = derived, maxOuter = Math.max(...d.cams.map(c => c.maxR + d.rollerR));
+  const maxLift = Math.max(5, ...d.cams.map(c => c.maxLift));
+  const gap = 26, spacing = 2 * maxOuter + gap;
+  const camX = d.cams.map((_, i) => i * spacing);
+  const boxL = -maxOuter - 14, boxR = camX[camX.length - 1] + maxOuter + 14;
+  const lidY = maxOuter + maxLift + 22;
+  const g2 = [boxL - 10 - d.g2.ra, 0];
+  const beta = 20 * DEG;                                  // direction from crank gear to cam-shaft gear
+  const g1 = [g2[0] - d.cd * Math.cos(beta), g2[1] - d.cd * Math.sin(beta)];
+  const C = beta + Math.PI - Math.PI / d.z2 + beta * d.z1 / d.z2;   // mesh phase
+  const crankLen = d.g1.ra + 12;
+  const figX = (boxL + boxR) / 2;
+  const minX = Math.min(g1[0] - crankLen - 10, g2[0] - d.g2.ra - 6);
+  const maxX = boxR + 8;
+  const minY = Math.min(-maxOuter - 22, g1[1] - crankLen - 10, g2[1] - d.g2.ra - 8);
+  const maxY = lidY + 150;
+  L = { camX, boxL, boxR, lidY, g1, g2, beta, C, crankLen, figX, minX, maxX, minY, maxY, maxOuter };
+}
+
+/* ---------- Colours from the theme tokens ---------- */
+let COL = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['paper', 'panel', 'ink', 'muted', 'line', 'grid', 'brass', 'brass-soft', 'steel', 'steel-soft', 'warn', 'ok', 'ok-soft']) COL[k] = cs.getPropertyValue('--' + k).trim();
+}
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawAll(); });
+new MutationObserver(() => { readColors(); drawAll(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+const camColor = i => COL[CAM_COLORS[i % CAM_COLORS.length]];
+
+/* ---------- Machine canvas ---------- */
+const canvas = document.getElementById('machine'), ctx = canvas.getContext('2d');
+let S = 1, W = 0, H = 0;
+function sizeCanvas() {
+  const w = canvas.clientWidth || 600, dpr = window.devicePixelRatio || 1;
+  const sx = w / (L.maxX - L.minX + 20);
+  H = Math.min(Math.max(260, (L.maxY - L.minY + 20) * sx), 640);
+  S = Math.min(sx, H / (L.maxY - L.minY + 20)); W = w;
+  canvas.style.height = H + 'px';
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+const X = x => (W - (L.maxX - L.minX) * S) / 2 + (x - L.minX) * S;
+const Y = y => H - ((H - (L.maxY - L.minY) * S) / 2 + (y - L.minY) * S);
+
+function poly(pts, cx, cy, rot) {
+  const c = Math.cos(rot), s = Math.sin(rot);
+  ctx.beginPath();
+  pts.forEach(([x, y], i) => { const wx = cx + x * c - y * s, wy = cy + x * s + y * c; i ? ctx.lineTo(X(wx), Y(wy)) : ctx.moveTo(X(wx), Y(wy)); });
+  ctx.closePath();
+}
+function circle(x, y, r) { ctx.beginPath(); ctx.arc(X(x), Y(y), r * S, 0, TAU); }
+function line(x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(X(x1), Y(y1)); ctx.lineTo(X(x2), Y(y2)); ctx.stroke(); }
+function text(t, x, y, opts = {}) {
+  ctx.font = opts.font || '500 12px "IBM Plex Sans", system-ui, sans-serif';
+  ctx.fillStyle = opts.color || COL.muted; ctx.textAlign = opts.align || 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(t, X(x), Y(y));
+}
+
+let theta = 0;                 // cam-shaft angle through the show, radians
+function drawMachine() {
+  const d = derived; if (!d) return;
+  ctx.clearRect(0, 0, W, H);
+  // drafting grid, 10 mm
+  ctx.strokeStyle = COL.grid; ctx.lineWidth = 1;
+  for (let x = Math.ceil(L.minX / 10) * 10; x <= L.maxX; x += 10) line(x, L.minY, x, L.maxY);
+  for (let y = Math.ceil(L.minY / 10) * 10; y <= L.maxY; y += 10) line(L.minX, y, L.maxX, y);
+
+  // box and lid
+  ctx.strokeStyle = COL.line; ctx.lineWidth = 2;
+  ctx.strokeRect(X(L.boxL), Y(L.lidY), (L.boxR - L.boxL) * S, (L.lidY + L.maxOuter + 18) * S);
+  ctx.fillStyle = COL.line; ctx.fillRect(X(L.boxL - 6), Y(L.lidY + 4), (L.boxR - L.boxL + 12) * S, 4 * S);
+
+  // shaft
+  ctx.setLineDash([6, 4]); ctx.strokeStyle = COL.muted; ctx.lineWidth = 1;
+  line(L.g2[0], 0, L.camX[L.camX.length - 1], 0); ctx.setLineDash([]);
+
+  // gears: crank angle a1, cam-shaft gear a2 = C - theta
+  const a1 = theta * d.ratio, a2 = L.C - theta;
+  for (const [g, pos, rot, fill] of [[d.g1, L.g1, a1, COL['steel-soft']], [d.g2, L.g2, a2, COL['brass-soft']]]) {
+    poly(g.pts, pos[0], pos[1], rot); ctx.fillStyle = fill; ctx.fill();
+    ctx.strokeStyle = fill === COL['brass-soft'] ? COL.brass : COL.steel; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = COL.muted; ctx.lineWidth = 0.8; circle(pos[0], pos[1], g.rp); ctx.stroke(); ctx.setLineDash([]);
+    circle(pos[0], pos[1], 2); ctx.fillStyle = COL.ink; ctx.fill();
+  }
+  // crank handle on the crank gear
+  const kx = L.g1[0] + L.crankLen * Math.cos(a1), ky = L.g1[1] + L.crankLen * Math.sin(a1);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 3 * Math.min(1, S * 1.2) + 1; line(L.g1[0], L.g1[1], kx, ky);
+  circle(kx, ky, 4); ctx.fillStyle = COL.brass; ctx.fill();
+  text('crank · ' + d.z1 + 'T', L.g1[0], L.g1[1] - d.g1.ra - 10, { font: '500 11px "IBM Plex Mono", monospace' });
+  text(d.z2 + 'T', L.g2[0], L.g2[1] - d.g2.ra - 8, { font: '500 11px "IBM Plex Mono", monospace' });
+
+  // cams + followers
+  const lifts = {};
+  d.cams.forEach((c, i) => {
+    const cx = L.camX[i], col = camColor(i), lift = c.lift.f(theta);
+    lifts[state.cams[i].part] = lift;
+    poly(c.surface, cx, 0, -theta); ctx.fillStyle = COL['brass-soft']; ctx.fill();
+    ctx.strokeStyle = c.undercut ? COL.warn : col; ctx.lineWidth = 1.6; ctx.stroke();
+    // start mark (rotates with the cam)
+    const mk = [Math.cos(Math.PI / 2 - theta), Math.sin(Math.PI / 2 - theta)];
+    ctx.strokeStyle = COL.muted; ctx.lineWidth = 1; line(cx + mk[0] * 4, mk[1] * 4, cx + mk[0] * (state.cams[i].base - d.rollerR - 3), mk[1] * (state.cams[i].base - d.rollerR - 3));
+    circle(cx, 0, 2); ctx.fillStyle = COL.ink; ctx.fill();
+    // follower
+    const ry = state.cams[i].base + lift;
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = Math.max(2, 2.4 * S);
+    line(cx, ry, cx, L.lidY + 10 + lift);
+    ctx.fillStyle = COL.line; ctx.fillRect(X(cx - 5), Y(L.lidY + 8), 10 * S, 12 * S);
+    if (d.rollerR > 0) { circle(cx, ry, d.rollerR); ctx.fillStyle = COL.panel; ctx.fill(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2; ctx.stroke(); }
+    text(state.cams[i].name, cx, -L.maxOuter - 10, { color: col, font: '600 12px "IBM Plex Sans", system-ui, sans-serif' });
+    text(lift.toFixed(1) + ' mm', cx, L.lidY + 22 + lift + 4, { font: '500 11px "IBM Plex Mono", monospace' });
+  });
+  drawFigure(lifts);
+}
+
+/* The figure on the lid. Parts move with the cams named arm, hat and head. */
+function drawFigure(lifts) {
+  const fx = L.figX, base = L.lidY + 8, s = 1;
+  const head = lifts.head || 0, hat = lifts.hat || 0, arm = lifts.arm || 0;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  // plinth and coat
+  ctx.fillStyle = COL.line; ctx.fillRect(X(fx - 34), Y(base + 8), 68 * S, 8 * S);
+  ctx.beginPath();
+  ctx.moveTo(X(fx - 26), Y(base + 8)); ctx.lineTo(X(fx - 20), Y(base + 70)); ctx.lineTo(X(fx + 20), Y(base + 70)); ctx.lineTo(X(fx + 26), Y(base + 8)); ctx.closePath();
+  ctx.fillStyle = COL['steel-soft']; ctx.fill(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5; ctx.stroke();
+  // head bows forward about the neck
+  const neck = [fx, base + 74], bow = -head * 3.2 * DEG;
+  const rot = (p) => { const dx = p[0] - neck[0], dy = p[1] - neck[1]; return [neck[0] + dx * Math.cos(bow) - dy * Math.sin(bow), neck[1] + dx * Math.sin(bow) + dy * Math.cos(bow)]; };
+  const hc = rot([fx, base + 90]);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 2; line(fx, base + 70, neck[0], neck[1]);
+  circle(hc[0], hc[1], 13); ctx.fillStyle = COL.panel; ctx.fill(); ctx.stroke();
+  const eye = rot([fx + 6, base + 92]); circle(eye[0], eye[1], 1.4); ctx.fillStyle = COL.ink; ctx.fill();
+  // top hat, lifted off the head by the hat cam
+  const hatPts = [[-16, 101], [16, 101], [16, 104], [11, 104], [11, 128], [-11, 128], [-11, 104], [-16, 104]].map(([x, y]) => rot([fx + x, base + y + hat]));
+  ctx.beginPath(); hatPts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath();
+  ctx.fillStyle = COL.ink; ctx.fill();
+  const band = [[-11, 106], [11, 106], [11, 109], [-11, 109]].map(([x, y]) => rot([fx + x, base + y + hat]));
+  ctx.beginPath(); band.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); ctx.fillStyle = COL.brass; ctx.fill();
+  // arm raised by the arm cam, from hanging down toward the hat brim
+  const sh = [fx + 19, base + 64], ang = (-75 + arm * (150 / 14)) * DEG, len = 42;
+  const hand = [sh[0] + len * Math.cos(ang), sh[1] + len * Math.sin(ang)];
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = Math.max(3, 6 * S); line(sh[0], sh[1], hand[0], hand[1]);
+  circle(hand[0], hand[1], 4.5); ctx.fillStyle = COL.panel; ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+/* ---------- Lift charts (one per cam) ---------- */
+function drawChart(i) {
+  const cv = document.getElementById('chart' + i); if (!cv) return;
+  const c = derived.cams[i], w = cv.clientWidth, h = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const padL = 34, padR = 6, padT = 8, padB = 18, top = Math.max(5, Math.ceil(c.maxLift));
+  const px = a => padL + (w - padL - padR) * a / TAU, py = v => h - padB - (h - padT - padB) * v / top;
+  g.font = '500 10px "IBM Plex Mono", monospace'; g.fillStyle = COL.muted; g.strokeStyle = COL.line; g.lineWidth = 1;
+  for (let q = 0; q <= 4; q++) { const x = px(q * Math.PI / 2); g.beginPath(); g.moveTo(x, padT); g.lineTo(x, h - padB); g.stroke(); g.textAlign = q === 0 ? 'left' : q === 4 ? 'right' : 'center'; g.fillText(q * 90 + '°', x, h - 4); }
+  g.textAlign = 'right'; g.fillText(top + ' mm', padL - 4, py(top) + 3); g.fillText('0', padL - 4, py(0) + 3);
+  for (const s of c.lift.segs) if (s.h1 !== s.h0) { g.fillStyle = s.h1 > s.h0 ? COL['brass-soft'] : COL['steel-soft']; g.fillRect(px(s.a0), padT, px(s.a1) - px(s.a0), h - padT - padB); }
+  g.beginPath(); for (let k = 0; k <= 240; k++) { const a = TAU * k / 240, v = c.lift.f(a); k ? g.lineTo(px(a), py(v)) : g.moveTo(px(a), py(v)); }
+  g.strokeStyle = camColor(i); g.lineWidth = 2; g.stroke();
+  const t = ((theta % TAU) + TAU) % TAU; g.strokeStyle = COL.ink; g.lineWidth = 1; g.beginPath(); g.moveTo(px(t), padT); g.lineTo(px(t), h - padB); g.stroke();
+  g.beginPath(); g.arc(px(t), py(c.lift.f(t)), 3.5, 0, TAU); g.fillStyle = COL.ink; g.fill();
+}
+
+/* ---------- Side panel: drive train and cam editors ---------- */
+const $ = id => document.getElementById(id);
+function bindDrive() {
+  for (const [id, key] of [['z1', 'z1'], ['z2', 'z2'], ['mod', 'module'], ['roller', 'roller']]) {
+    $(id).value = state[key];
+    $(id).oninput = () => { state[key] = +$(id).value; changed(); };
+  }
+  $('speed').value = state.showSeconds; $('speedOut').textContent = state.showSeconds + ' s';
+  $('speed').oninput = () => { state.showSeconds = +$('speed').value; $('speedOut').textContent = state.showSeconds + ' s'; save(); };
+}
+function renderDriveInfo() {
+  const d = derived, turns = d.ratio, chips = [];
+  $('driveNote').innerHTML = `Turn the crank <b>${fmt(turns, 2)} times</b> for one full show. Shaft centres sit <b>${fmt(d.cd, 1)} mm</b> apart; the gears mesh at exactly that distance. Pitch diameters are <b>${fmt(2 * d.g1.rp, 1)}</b> and <b>${fmt(2 * d.g2.rp, 1)} mm</b>.`;
+  for (const [z, name] of [[d.z1, 'Crank gear'], [d.z2, 'Cam-shaft gear']]) if (z < 14) chips.push(`<span class="chip warn">${name}: ${z} teeth runs rough (14+ is smoother)</span>`);
+  if (!chips.length) chips.push('<span class="chip">Gears mesh cleanly</span>');
+  $('driveChips').innerHTML = chips.join('');
+}
+const fmt = (v, n) => (+v).toFixed(n).replace(/\.0+$/, '');
+
+function renderCams() {
+  const host = $('cams'); host.innerHTML = '';
+  state.cams.forEach((cam, i) => {
+    const sec = document.createElement('section'); sec.className = 'panel'; sec.setAttribute('aria-label', cam.name + ' cam');
+    sec.innerHTML = `
+      <div class="panel-head">
+        <div class="cam-name"><span class="swatch" style="background:${camColor(i)}"></span>${esc(cam.name)} cam</div>
+        <label class="inline" for="law${i}">Motion <select id="law${i}">${Object.entries(LAWS).map(([k, v]) => `<option value="${k}" ${k === cam.law ? 'selected' : ''}>${v.label}</option>`).join('')}</select></label>
+      </div>
+      <canvas class="chart" id="chart${i}" aria-label="Lift over one turn of the ${esc(cam.name)} cam"></canvas>
+      <div class="fields"><label class="field" for="base${i}">Base radius (mm)<input id="base${i}" type="number" min="8" max="80" step="1" value="${cam.base}"></label></div>
+      <div class="steps" id="steps${i}"></div>
+      <div class="chips"><button id="add${i}">Add a step</button></div>
+      <div class="chips" id="chips${i}"></div>`;
+    host.appendChild(sec);
+    $('law' + i).onchange = e => { cam.law = e.target.value; changed(); };
+    $('base' + i).oninput = e => { cam.base = +e.target.value || cam.base; changed(); };
+    $('add' + i).onclick = () => { cam.steps.push({ deg: 30, to: 0 }); renderSteps(i); changed(); };
+    renderSteps(i);
+  });
+}
+function renderSteps(i) {
+  const cam = state.cams[i], host = $('steps' + i); host.innerHTML = '';
+  let prev = 0;
+  cam.steps.forEach((s, j) => {
+    const row = document.createElement('div'); row.className = 'step';
+    row.innerHTML = `<span class="kind" id="kind${i}_${j}"></span><span>over</span><input id="deg${i}_${j}" type="number" min="0" max="360" step="5" value="${s.deg}" aria-label="Degrees"><span>° to</span><input id="to${i}_${j}" type="number" min="0" max="40" step="0.5" value="${s.to}" aria-label="Height in mm"><span>mm</span><button class="icon-btn rm" id="rm${i}_${j}" aria-label="Remove step">Remove</button>`;
+    host.appendChild(row);
+    $(`deg${i}_${j}`).oninput = e => { s.deg = +e.target.value; changed(); };
+    $(`to${i}_${j}`).oninput = e => { s.to = +e.target.value; changed(); };
+    $(`rm${i}_${j}`).onclick = () => { cam.steps.splice(j, 1); renderSteps(i); changed(); };
+    prev = s.to;
+  });
+  const auto = document.createElement('div'); auto.className = 'step auto'; auto.id = 'auto' + i; host.appendChild(auto);
+  updateStepLabels(i);
+}
+function updateStepLabels(i) {
+  const cam = state.cams[i]; let prev = 0;
+  cam.steps.forEach((s, j) => {
+    const el = $(`kind${i}_${j}`); if (!el) return;
+    const k = s.to > prev ? 'rise' : s.to < prev ? 'fall' : 'hold';
+    el.className = 'kind ' + k; el.textContent = k === 'rise' ? 'Rise' : k === 'fall' ? 'Fall' : 'Hold';
+    prev = s.to;
+  });
+  const lift = derived.cams[i].lift, auto = $('auto' + i);
+  if (auto) {
+    if (lift.leftoverDeg > 0.5) auto.innerHTML = `<span class="kind ${lift.finalH > 0 ? 'fall' : 'hold'}">${lift.finalH > 0 ? 'Fall' : 'Hold'}</span><span>over</span><span class="readout">${fmt(lift.leftoverDeg, 0)}</span><span>° to</span><span class="readout">0</span><span>mm, added so the cam closes</span>`;
+    else auto.innerHTML = '';
+  }
+}
+function renderCamChips(i) {
+  const c = derived.cams[i], chips = [];
+  if (c.lift.scaled) chips.push(`<span class="chip warn">Steps add up to ${fmt(c.lift.total, 0)}°; squeezed to fit 360°</span>`);
+  if (c.lift.noReturn) chips.push('<span class="chip warn">No room left to come back down. Leave some degrees for the fall.</span>');
+  if (c.undercut) chips.push('<span class="chip warn">Undercut: the roller can’t follow this shape. Use a bigger base radius, gentler steps or a smaller roller.</span>');
+  if (c.maxPA > 30) chips.push(`<span class="chip warn">Steep: pressure angle ${fmt(c.maxPA, 0)}° (keep under 30°). Spread the rise over more degrees or enlarge the base.</span>`);
+  if (!chips.length) chips.push(`<span class="chip">Buildable · steepest ${fmt(c.maxPA, 0)}°</span>`);
+  $('chips' + i).innerHTML = chips.join('');
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+/* ---------- Size table and cutting file ---------- */
+function renderSpecs() {
+  const d = derived, rows = [];
+  d.cams.forEach((c, i) => rows.push([`${state.cams[i].name} cam`, fmt(2 * state.cams[i].base, 1), fmt(2 * c.outerR, 1), fmt(c.maxLift, 1), fmt(c.maxPA, 0) + '°', c.undercut || c.maxPA > 30 ? 'Check' : 'OK']));
+  rows.push([`Crank gear, ${d.z1}T`, fmt(2 * d.g1.rp, 1), fmt(2 * d.g1.ra, 1), '', '', d.z1 < 14 ? 'Check' : 'OK']);
+  rows.push([`Cam-shaft gear, ${d.z2}T`, fmt(2 * d.g2.rp, 1), fmt(2 * d.g2.ra, 1), '', '', d.z2 < 14 ? 'Check' : 'OK']);
+  $('specs').innerHTML = `<thead><tr><th>Part</th><th class="num">Base / pitch Ø</th><th class="num">Outside Ø</th><th class="num">Lift</th><th class="num">Steepest</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]}</td><td><span class="chip ${r[5] === 'OK' ? '' : 'warn'}">${r[5]}</span></td></tr>`).join('')}<tr><td>Shaft centres</td><td class="num" colspan="2">${fmt(d.cd, 1)} mm apart</td><td class="num" colspan="2">${fmt(d.ratio, 2)} crank turns per show</td><td></td></tr></tbody>`;
+}
+function specText() {
+  const d = derived;
+  const lines = ['Cams & Cogs, part sizes (mm)', `Module ${d.m}, roller Ø ${state.roller}, shaft holes Ø 4`];
+  d.cams.forEach((c, i) => lines.push(`${state.cams[i].name} cam: base Ø ${fmt(2 * state.cams[i].base, 1)}, outside Ø ${fmt(2 * c.outerR, 1)}, lift ${fmt(c.maxLift, 1)}, steepest ${fmt(c.maxPA, 0)}°`));
+  lines.push(`Crank gear: ${d.z1} teeth, pitch Ø ${fmt(2 * d.g1.rp, 1)}, outside Ø ${fmt(2 * d.g1.ra, 1)}`);
+  lines.push(`Cam-shaft gear: ${d.z2} teeth, pitch Ø ${fmt(2 * d.g2.rp, 1)}, outside Ø ${fmt(2 * d.g2.ra, 1)}`);
+  lines.push(`Shaft centres ${fmt(d.cd, 1)} apart. ${fmt(d.ratio, 2)} crank turns per show.`);
+  return lines.join('\n');
+}
+function buildSVG() {
+  const d = derived, parts = [], gap = 8, bore = 2;
+  d.cams.forEach((c, i) => parts.push({ pts: c.surface, r: c.outerR, label: state.cams[i].name + ' cam', mark: state.cams[i].base - d.rollerR - 2 }));
+  parts.push({ pts: d.g1.pts, r: d.g1.ra, label: d.z1 + 'T', pitch: d.g1.rp });
+  parts.push({ pts: d.g2.pts, r: d.g2.ra, label: d.z2 + 'T', pitch: d.g2.rp });
+  let x = gap; const H = Math.max(...parts.map(p => 2 * p.r)) + 2 * gap + 8;
+  const f = v => (Math.round(v * 1000) / 1000).toString();
+  const cut = [], eng = [];
+  for (const p of parts) {
+    const cx = x + p.r, cy = gap + Math.max(...parts.map(q => q.r));
+    cut.push(`<path d="M ${p.pts.map(([px, py]) => `${f(cx + px)} ${f(cy - py)}`).join(' L ')} Z"/>`);
+    cut.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${bore}"/>`);
+    if (p.mark) eng.push(`<path d="M ${f(cx)} ${f(cy - bore - 1.5)} L ${f(cx)} ${f(cy - p.mark)}"/>`);
+    if (p.pitch) eng.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(p.pitch)}" stroke-dasharray="1 1"/>`);
+    eng.push(`<text x="${f(cx)}" y="${f(H - 3)}" font-size="4" text-anchor="middle" font-family="sans-serif" stroke="none" fill="#0000ff">${esc(p.label)}</text>`);
+    x += 2 * p.r + gap;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(x)}mm" height="${f(H)}mm" viewBox="0 0 ${f(x)} ${f(H)}">
+  <!-- Cams & Cogs. Units: mm. Engraved line on each cam = start of show: set it pointing at the follower. -->
+  <g id="CUT" fill="none" stroke="#ff0000" stroke-width="0.1">
+    ${cut.join('\n    ')}
+  </g>
+  <g id="ENGRAVE" fill="none" stroke="#0000ff" stroke-width="0.1">
+    ${eng.join('\n    ')}
+  </g>
+</svg>`;
+}
+function flash(msg) { $('status').textContent = msg; clearTimeout(flash.t); flash.t = setTimeout(() => $('status').textContent = '', 4000); }
+function copyText(t, okMsg) {
+  const fallback = () => { const ta = $('svgOut'); ta.hidden = false; ta.value = t; ta.focus(); ta.select(); flash('Copy wasn’t allowed here. The text is selected below: press Ctrl+C or Cmd+C.'); };
+  try { navigator.clipboard.writeText(t).then(() => flash(okMsg), fallback); } catch (e) { fallback(); }
+}
+let framed = true; try { framed = window.self !== window.top; } catch (e) { framed = true; }
+$('dlSvg').hidden = framed;   // downloads only work when the page is opened on its own
+$('copySvg').onclick = () => copyText(buildSVG(), 'SVG copied. Paste it into a file named cams-and-cogs.svg.');
+$('copySpec').onclick = () => copyText(specText(), 'Part sizes copied.');
+$('dlSvg').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buildSVG()], { type: 'image/svg+xml' })); a.download = 'cams-and-cogs.svg'; a.click(); flash('Downloaded cams-and-cogs.svg'); };
+$('reset').onclick = () => { state = structuredClone(EXAMPLE); save(); init(); flash('Back to the tipping-hat gentleman.'); };
+
+/* ---------- Loop ---------- */
+function changed() {
+  derive(); save(); sizeCanvas(); renderDriveInfo();
+  state.cams.forEach((_, i) => { updateStepLabels(i); renderCamChips(i); });
+  renderSpecs(); drawAll();
+}
+function drawAll() { if (!derived) return; drawMachine(); state.cams.forEach((_, i) => drawChart(i)); readouts(); }
+function readouts() {
+  const t = ((theta % TAU) + TAU) % TAU;
+  $('angleOut').textContent = Math.round(t / DEG) + '°';
+  $('crankOut').textContent = `${Math.min(Math.ceil(derived.ratio), Math.floor(t / TAU * derived.ratio) + 1)} of ${fmt(derived.ratio, 2)}`;
+}
+let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = null;
+function tick(ts) {
+  if (playing && last !== null) theta += TAU * (ts - last) / 1000 / Math.max(1, state.showSeconds);
+  last = ts; if (playing) drawAll(); requestAnimationFrame(tick);
+}
+$('play').onclick = () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; };
+function init() {
+  derive(); bindDrive(); renderCams(); changed();
+  $('play').textContent = playing ? 'Pause' : 'Play';
+}
+window.addEventListener('resize', () => { sizeCanvas(); drawAll(); });
+init(); requestAnimationFrame(tick);
+</script>

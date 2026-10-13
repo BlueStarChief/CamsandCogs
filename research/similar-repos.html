@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automata Prior Art</title>
+<style>
+:root {
+  --bg:#0f0f13; --text:#e8eaf0; --accent:#ffc850; --border:rgba(255,200,80,0.2);
+  --success:#56c47d; --blue:#4f9cf9; --red:#ff6b6b; --orange:#ff9f43;
+  --muted:rgba(255,255,255,0.55); --code-bg:rgba(255,255,255,0.05);
+}
+* { box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font:15px/1.6 system-ui,-apple-system,sans-serif;
+  max-width:1000px; margin:0 auto; padding:24px 16px 80px; }
+h1 { color:var(--accent); font-size:1.7rem; line-height:1.25; }
+h2 { color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:.3rem; margin-top:2.4rem; }
+h3 { color:var(--text); margin-top:1.8rem; }
+a { color:var(--blue); }
+code { background:var(--code-bg); padding:.1rem .3rem; border-radius:4px; font-size:.88em; }
+pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:12px; overflow-x:auto; }
+pre code { background:none; padding:0; }
+table { border-collapse:collapse; width:100%; display:block; overflow-x:auto; font-size:.9rem; }
+th,td { border:1px solid var(--border); padding:.4rem .6rem; text-align:left; vertical-align:top; }
+th { background:rgba(255,200,80,0.08); }
+.flow-section { overflow-x:auto; }
+.flow-section svg { display:block; margin:0 auto; max-width:100%; height:auto; }
+.flow-tabs { display:flex; gap:4px; margin-bottom:1rem; flex-wrap:wrap; }
+.flow-tab { padding:.4rem 1rem; border-radius:8px; border:1px solid var(--border); background:transparent;
+  color:var(--muted); cursor:pointer; font-size:.85rem; font-family:inherit; }
+.flow-tab.active { background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:600; }
+.flow-panel { display:none; }
+.flow-panel.active { display:block; }
+.flag-list { list-style:none; display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; padding:0; }
+.flag-list li { padding:.5rem .75rem; border-radius:6px; font-size:.9rem; }
+.flag-list li.issue { background:rgba(255,107,107,0.08); border-left:3px solid var(--red); }
+.flag-list li.unclear { background:rgba(255,159,67,0.08); border-left:3px solid var(--orange); }
+.flag-list li.ok { background:rgba(86,196,125,0.06); border-left:3px solid var(--success); }
+.flag-label { font-weight:600; font-size:.75rem; text-transform:uppercase; letter-spacing:.5px; margin-right:.5rem; }
+.flag-label.issue { color:var(--red); } .flag-label.unclear { color:var(--orange); } .flag-label.ok { color:var(--success); }
+</style>
+</head>
+<body>
+<h1>Similar repos: cams, gears and linkages for 1800s-style automata</h1>
+<p><em>Generated 2026-10-13 by <code>/similar-repos</code>. Source of truth for <code>similar-repos.html</code>.</em></p>
+<h2>Scope</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Problem</strong></td>
+<td>Design the mechanical "program" of a clockwork automaton: cams and followers, gears and gear trains, linkages and levers, escapements, Geneva drives.</td>
+</tr>
+<tr>
+<td><strong>Stack</strong></td>
+<td>Browser JS/TS.</td>
+</tr>
+<tr>
+<td><strong>Outputs</strong></td>
+<td>Cut profiles (SVG/DXF), 3D models (STL) and an animated simulator.</td>
+</tr>
+<tr>
+<td><strong>Direction</strong></td>
+<td>Both: describe the motion and get the cam, <em>or</em> draw a cam and see the motion.</td>
+</tr>
+<tr>
+<td><strong>Dealbreakers</strong></td>
+<td>None. License and health are noted, not filtered. Fabrication method is still undecided.</td>
+</tr>
+<tr>
+<td><strong>"Similar" means</strong></td>
+<td>Does the mechanism math (cam profile, involute teeth, linkage synthesis) and turns it into something you can cut or print.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Search surface.</strong> About 30 <code>gh</code> queries. Concept queries: <em>cam profile generator, cam follower, cam design, cam mechanism, cam synthesis, involute gear generator, gear generator, gear train calculator, clock gears, linkage simulator, mechanism simulator, mechanism editor, automaton cam, mechanical automata, mechanical characters, geneva drive, escapement clock, kinetic sculpture, openscad gear/cam</em>. Topic queries: <code>cam</code>, <code>gear-generator</code>, <code>linkage</code>, <code>kinematics</code>, <code>mechanism</code>. Code searches on rise/dwell/cycloidal terms returned nothing. This is a thin niche on GitHub: no repo has more than about 400 stars, and most of the good ones are hobby projects from 2025–26.</p>
+<h2>Ranked landscape</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Repo</th>
+<th>★</th>
+<th>License</th>
+<th>Competitor?</th>
+<th>Why it's similar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://github.com/jumpjack/CamFollowerJS">jumpjack/CamFollowerJS</a></td>
+<td>6</td>
+<td>none → <strong>withheld</strong></td>
+<td><strong>yes</strong> + reference</td>
+<td>The only repo built explicitly for <strong>automata</strong> cams. It turns a flat displacement chart into a polar cam and animates the follower in the browser. It also ships automata reference PDFs and videos.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://github.com/MHSGhali/Linkage-Design">MHSGhali/Linkage-Design</a></td>
+<td>0</td>
+<td>MIT</td>
+<td>reference</td>
+<td><strong>The whole stack in one program:</strong> links, sliders, involute gears, cams, Geneva wheels. It designs in both directions (draw a path → machine) and exports printable STL parts with a manifest. <strong>Clone target.</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://github.com/n-nagaya/mechanical-characters">n-nagaya/mechanical-characters</a></td>
+<td>2</td>
+<td>MIT</td>
+<td><strong>yes</strong> + reference</td>
+<td>Browser port of Disney's <em>Computational Design of Mechanical Characters</em> (SIGGRAPH 2013). Sketch a motion curve and it finds and optimizes a crank, linkage and gear mechanism, then exports mm-true DXF.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="https://github.com/EkaEva/CamForge">EkaEva/CamForge</a></td>
+<td>4</td>
+<td>MIT</td>
+<td>reference</td>
+<td>Serious cam engineering: 6+ motion laws, offset followers, roller radius, <strong>pressure-angle and curvature-radius plots</strong>. SolidJS front end with a Rust core.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="https://github.com/1400130-collab/gearforge">1400130-collab/gearforge</a></td>
+<td>2</td>
+<td>MIT</td>
+<td>reference</td>
+<td>Standards-correct involute gears, racks and pulleys in zero-dependency browser JS. <strong>Kerf-compensated SVG/DXF</strong> for laser cutters, plus a caliper inspection report.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="https://github.com/moh-d-m4x/MechAnim">moh-d-m4x/MechAnim</a></td>
+<td>0</td>
+<td>MIT</td>
+<td><strong>yes</strong> + reference</td>
+<td>"Character motion designer". Draw a path or trace one from video, and a genetic algorithm fits 4-bar, 5-bar, piston or Scotch-yoke linkages. SVG/DXF export.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="https://github.com/HugoFara/pylinkage">HugoFara/pylinkage</a></td>
+<td>32</td>
+<td>MIT</td>
+<td>reference</td>
+<td>The best linkage <strong>synthesis</strong> math found: Burmester and Freudenstein plus PSO/DE. "Tell it where the point should go." Exports DXF and STEP. Python.</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="https://github.com/SindiSekkas/geneva-drive-generator">SindiSekkas/geneva-drive-generator</a></td>
+<td>2</td>
+<td>MIT</td>
+<td>reference</td>
+<td>Parametric Geneva drive (intermittent motion) to DXF, using Walsh-handbook formulas. Small, clean TS with Vite and Vitest.</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="https://github.com/jes/clock-gear-train-calculator">jes/clock-gear-train-calculator</a></td>
+<td>0</td>
+<td>none → <strong>withheld</strong></td>
+<td>reference</td>
+<td>Searches wheel and pinion tooth counts that hit a target ratio, which is exactly the clockwork "going train" problem.</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="https://github.com/hdrpano/watchmaking">hdrpano/watchmaking</a></td>
+<td>5</td>
+<td>MIT</td>
+<td>reference</td>
+<td>Horological gear trains, Belot wheel and pinion profiles, contact and efficiency analysis, DXF. Clockwork-grade tooth forms (not involute).</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="https://github.com/chrisspen/gears">chrisspen/gears</a></td>
+<td>403</td>
+<td>unclear → <strong>withheld</strong></td>
+<td>reference</td>
+<td>The most-starred gear library: OpenSCAD spur, bevel, worm, rack and herringbone parts, ready for 3D printing.</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a href="https://github.com/piellardj/non-circular-gears">piellardj/non-circular-gears</a></td>
+<td>18</td>
+<td>MIT</td>
+<td>reference</td>
+<td>Non-circular gears for <em>variable-speed</em> motion, a da Vinci-era trick that is useful for lifelike easing.</td>
+</tr>
+</tbody>
+</table>
+<p>Also seen and not shortlisted:</p>
+<ul>
+<li><a href="https://github.com/jauhl/mecEdit">jauhl/mecEdit</a>: MIT linkage PWA.</li>
+<li><a href="https://github.com/dpellegr/PolyGear">dpellegr/PolyGear</a>: OpenSCAD, no license.</li>
+<li><a href="https://github.com/joy-boy56/Cam-profile-generator">joy-boy56/Cam-profile-generator</a>: Python, MIT, cam to DXF.</li>
+<li><a href="https://github.com/hermanncain/Kineticist">hermanncain/Kineticist</a>: kinetic sculpture CAD.</li>
+<li><em>ncreighton/premium-automaton-mech-001</em>: a paid <strong>Notion template</strong> for "automaton cam and lever sequences". It isn't code, but it is a <strong>commercial competitor</strong> and a sign that makers want this tool.</li>
+</ul>
+<h2>Tier-1 wiring maps</h2>
+<ul>
+<li><strong>CamFollowerJS.</strong> Plain HTML and JS with <code>paper.js</code> (vector canvas). A flat cartesian profile in a JSON file is wrapped to a polar cam, then rotated while the follower is solved for contact. Runs offline from <code>index.html</code>. STL is on the wishlist; SVG is converted to STL externally.</li>
+<li><strong>Linkage-Design.</strong> C99 and SDL2, no other dependencies. The pieces connect in a line:<ul>
+<li><code>mechanism.c</code> is the model.</li>
+<li><code>solver.c</code> does Gauss-Newton on distance constraints.</li>
+<li><code>cam.c</code>, <code>gearing.c</code>, <code>joints.c</code> and <code>synth.c</code> are domain modules.</li>
+<li><code>render.c</code> draws the canvas.</li>
+<li><code>export.c</code> writes a Blender script; <code>mesh3d.c</code> and <code>print3d.c</code> write STL plus a manifest.</li>
+<li>The headless test suite covers every non-SDL module.</li>
+</ul>
+</li>
+<li><strong>mechanical-characters.</strong> A single <code>index.html</code> with no libraries. Sketch → search a precomputed mechanism database → continuous optimization → play with one crank → export JSON, CSV or DXF (R12, layered: LINK, PIVOT, GEAR…).</li>
+<li><strong>CamForge.</strong> SolidJS and Tailwind UI. The <code>camforge-core</code> Rust crate (motion, profile, geometry, simulation) is shared by a Tauri desktop shell and an Axum web server. Exports go through server routes. <code>docs/ALGORITHMS.md</code> documents every formula.</li>
+<li><strong>gearforge.</strong> Zero-dependency browser JS:<ul>
+<li><code>involute.js</code>, <code>pulley.js</code> and <code>spline.js</code> make geometry.</li>
+<li><code>geometry.js</code> handles offsets and bounding boxes.</li>
+<li><code>exporters.js</code> writes SVG and DXF with kerf.</li>
+<li><code>app.js</code> is the UI; <code>tests/run-tests.js</code> runs on Node.</li>
+</ul>
+</li>
+<li><strong>MechAnim.</strong> TS, Vite and React. The mechanism types sit in a 2D canvas simulator; a GA/Monte-Carlo optimizer fits a path; Catmull-Rom smooths video annotations; exports are SVG and DXF.</li>
+<li><strong>pylinkage.</strong> Python with optional numba, SciPy, SymPy and drawsvg. Joints and linkages feed a solver; synthesis covers Burmester, Freudenstein and the optimizers; visualizers and exporters write DXF and STEP.</li>
+<li><strong>geneva-drive-generator.</strong> Vite, TS and Vitest. A parameter form feeds derived dimensions, which feed a preview and a DXF writer.</li>
+<li><strong>clock-gear-train-calculator.</strong> A single JS page. Brute-force search over tooth counts per shaft, with the result filtered by target ratio.</li>
+<li><strong>watchmaking / chrisspen gears / non-circular-gears.</strong> Respectively: a PyQt analysis app, an OpenSCAD module library, and a TS and SVG generator.</li>
+</ul>
+<h2>Clone this one: <code>MHSGhali/Linkage-Design</code></h2>
+<p>It beat the runners-up because it is the <strong>only repo that covers every mechanism you listed and every output you asked for</strong>:</p>
+<ul>
+<li>cams with a roller follower and return spring, involute gears and racks, linkages, and Geneva wheels;</li>
+<li>design in both directions (motion → machine, and machine → motion);</li>
+<li>an animated simulator plus printable parts.</li>
+</ul>
+<p>It is MIT-licensed and actively developed (pushed 2026-09). Every design decision is documented in comments, and the math has headless tests. It is written in C/SDL2 rather than the browser, but the module boundaries carry over to JS almost one-to-one.</p>
+<ul>
+<li><strong>Backup and reuse source for cam math in TS:</strong> EkaEva/CamForge (MIT).</li>
+<li><strong>Backup and reuse source for laser-ready gear export:</strong> gearforge (MIT).</li>
+<li><strong>Best automata-specific UX to learn from:</strong> CamFollowerJS. It has no license, so it is for ideas only.</li>
+</ul>
+<h2>Exemplar teardown (Tier 2)</h2>
+<p><strong>License gate: MIT → permissive → snippets allowed (<code>reuse_risk: ok</code>).</strong> The clone was read, then deleted from <code>/tmp/similar-repos/</code>.</p>
+<h3>How it's wired</h3>
+<ol>
+<li><strong>Model.</strong> <code>mechanism.c</code>/<code>.h</code> holds connectors (joints) and links (rigid bodies stored as pairwise rest distances). Cams, gear wheels, sliders and Geneva wheels attach to links. Deletion uses tombstones, so ids stay stable.</li>
+<li><strong>Solver.</strong> <code>solver.c</code> runs each frame:<ul>
+<li>It <em>poses</em> motor-driven links directly, in dependency order, so an arm can ride on another arm.</li>
+<li>It solves every other joint with damped Gauss-Newton, warm-started from the last frame so the mechanism stays on the same assembly branch.</li>
+<li>Gravity is one Verlet step, then projection back onto the constraints.</li>
+</ul>
+</li>
+<li><strong>Domain modules (no UI dependency, so they're fully tested):</strong><ul>
+<li><code>cam.c</code>: the profile is stored as a <strong>pitch curve</strong> (the path of the roller's centre) sampled every 2°. Contact is one-sided with a preloaded return spring, so a fast cam <em>floats</em> the follower, as a real one would. It checks for undercut.</li>
+<li><code>gearing.c</code>: <strong>the single place tooth shape is decided.</strong> The model snaps every wheel to a <em>module × whole teeth</em>, the canvas draws the same outline, and STL extrudes it. What meshes on screen meshes on the print bed.</li>
+<li><code>joints.c</code>: slider, gear and Geneva kinematics.</li>
+<li><code>synth.c</code>: draw-a-path synthesis. It fits a Grashof four-bar, or failing that a Fourier chain of rotating arms (which can trace any closed curve).</li>
+</ul>
+</li>
+<li><strong>Outputs.</strong><ul>
+<li><code>render.c</code> draws the canvas.</li>
+<li><code>export.c</code> writes a Blender script with 120 keyframes.</li>
+<li><code>mesh3d.c</code> does ear-clip triangulation, extrusion and binary STL, plus watertightness checks.</li>
+<li><code>print3d.c</code> assigns parts to <strong>layers</strong> by graph-colouring "shares a pin", adds spacer washers, sizes pin holes with running clearance, and writes <code>MANIFEST.txt</code>.</li>
+</ul>
+</li>
+</ol>
+<p>The diagram is in <code>similar-repos.html</code> → <em>System Flows</em>.</p>
+<h2 id="system-flows">System Flows</h2>
+<section class="flow-section">
+  <div class="flow-tabs">
+    <button class="flow-tab active" onclick="showFlow('flow-pipeline')">Design Pipeline</button>
+    <button class="flow-tab" onclick="showFlow('flow-cam')">Cam Design</button>
+    <button class="flow-tab" onclick="showFlow('flow-gear')">Gear Train</button>
+  </div>
+
+  <div class="flow-panel active" id="flow-pipeline">
+    <svg viewBox="0 0 800 640" width="800" height="640" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="pg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="pr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+        <marker id="pb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4f9cf9"/></marker>
+      </defs>
+      <rect x="250" y="10" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="31" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">INTENT</text>
+      <text x="400" y="49" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">draw a path · rise/dwell/fall table · draw a cam · target ratio</text>
+      <line x1="400" y1="62" x2="400" y2="100" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="100" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="121" text-anchor="middle" fill="#4f9cf9" font-size="13" font-weight="700">SYNTHESIS — synth / cam / gearing</text>
+      <text x="400" y="139" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">motion law → pitch curve · path → four-bar or Fourier arms · ratio → teeth</text>
+      <line x1="400" y1="152" x2="400" y2="190" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="190" width="340" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="211" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">MECHANISM MODEL</text>
+      <text x="400" y="229" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">joints, links, cams, gears, Geneva · gears snapped to module × whole teeth</text>
+      <line x1="400" y1="242" x2="400" y2="280" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="280" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="301" text-anchor="middle" fill="#4f9cf9" font-size="13" font-weight="700">SOLVER (per frame)</text>
+      <text x="400" y="319" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">pose motors · Gauss-Newton constraints · one-sided cam contact + spring</text>
+      <line x1="400" y1="332" x2="400" y2="368" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <polygon points="400,368 470,408 400,448 330,408" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="405" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">BUILDABLE?</text>
+      <text x="400" y="418" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">undercut·Grashof·bind</text>
+
+      <line x1="470" y1="408" x2="590" y2="408" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#pr)"/>
+      <text x="530" y="400" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">NO</text>
+      <rect x="590" y="382" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="403" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">WARN / AUTO-FIX</text>
+      <text x="685" y="421" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">shrink roller · flag &lt;14 teeth</text>
+      <path d="M685,382 L685,306 L572,306" fill="none" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4" marker-end="url(#pr)"/>
+      <text x="692" y="345" fill="#ff6b6b" font-size="9">re-solve</text>
+
+      <line x1="400" y1="448" x2="400" y2="490" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <text x="412" y="474" fill="#56c47d" font-size="9" font-weight="600">YES</text>
+
+      <rect x="250" y="490" width="300" height="44" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <text x="400" y="509" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="700">GEOMETRY CORE (one source)</text>
+      <text x="400" y="525" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">same outline feeds screen, SVG/DXF and STL</text>
+
+      <line x1="320" y1="534" x2="150" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <line x1="400" y1="534" x2="400" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <line x1="480" y1="534" x2="650" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <rect x="40" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="150" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">SIMULATOR</text>
+      <text x="150" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">canvas animation + s/v/a plots</text>
+      <rect x="290" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">SVG / DXF</text>
+      <text x="400" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">mm-true · kerf · CUT/ENGRAVE layers</text>
+      <rect x="540" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="650" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">STL PARTS</text>
+      <text x="650" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">layers · pin holes · spacers · manifest</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Linkage-Design implements this full chain with headless tests over every gallery template (runs 6 s each, fails if it binds).</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> Fabrication method not chosen yet. SVG/DXF (laser/CNC/paper template) and STL (print) both stay in scope until it is.</li>
+      <li class="issue"><span class="flag-label issue">ISSUE</span> The exemplar is C/SDL2. The module boundaries port to TS, but none of its code runs in a browser as-is.</li>
+    </ul>
+  </div>
+
+  <div class="flow-panel" id="flow-cam">
+    <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="cg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="cr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+        <marker id="cb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4f9cf9"/></marker>
+      </defs>
+      <polygon points="400,10 480,50 400,90 320,50" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="47" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">START FROM?</text>
+      <text x="400" y="60" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">motion or shape</text>
+
+      <line x1="320" y1="50" x2="200" y2="110" stroke="#4f9cf9" stroke-width="1" marker-end="url(#cb)"/>
+      <text x="240" y="70" fill="#4f9cf9" font-size="9" font-weight="600">MOTION</text>
+      <line x1="480" y1="50" x2="600" y2="110" stroke="#4f9cf9" stroke-width="1" marker-end="url(#cb)"/>
+      <text x="560" y="70" fill="#4f9cf9" font-size="9" font-weight="600">SHAPE</text>
+
+      <rect x="80" y="110" width="240" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="200" y="131" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">RISE / DWELL / FALL TABLE</text>
+      <text x="200" y="149" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">or a flat lift chart · law: cycloidal default</text>
+      <rect x="480" y="110" width="240" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="600" y="131" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">DRAWN CAM OUTLINE</text>
+      <text x="600" y="149" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">shaft at centroid · offset outward by roller</text>
+
+      <line x1="200" y1="162" x2="370" y2="200" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+      <line x1="600" y1="162" x2="430" y2="200" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+      <rect x="250" y="200" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="221" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">PITCH CURVE r(φ)</text>
+      <text x="400" y="239" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">roller-centre path, sampled every 2°</text>
+      <line x1="400" y1="252" x2="400" y2="290" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+
+      <rect x="250" y="290" width="300" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="311" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">CAM SURFACE</text>
+      <text x="400" y="329" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">pitch curve offset inward by roller radius</text>
+      <line x1="400" y1="342" x2="400" y2="378" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+
+      <polygon points="400,378 470,413 400,448 330,413" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="410" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">UNDERCUT?</text>
+      <text x="400" y="423" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">offset folds back</text>
+      <line x1="470" y1="413" x2="590" y2="413" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#cr)"/>
+      <text x="530" y="405" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">YES</text>
+      <rect x="590" y="387" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="408" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">SHRINK ROLLER</text>
+      <text x="685" y="426" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">or raise base circle; warn</text>
+      <path d="M685,387 L685,316 L552,316" fill="none" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4" marker-end="url(#cr)"/>
+
+      <line x1="400" y1="448" x2="400" y2="486" stroke="#56c47d" stroke-width="1.5" marker-end="url(#cg)"/>
+      <text x="412" y="471" fill="#56c47d" font-size="9" font-weight="600">NO</text>
+      <rect x="250" y="486" width="300" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="507" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">SIMULATE + PLOT</text>
+      <text x="400" y="525" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">s, v, a, pressure angle vs φ · follower float if too fast</text>
+      <line x1="400" y1="538" x2="400" y2="552" stroke="#56c47d" stroke-width="1.5" marker-end="url(#cg)"/>
+      <rect x="250" y="552" width="300" height="40" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="569" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">EXPORT CAM</text>
+      <text x="400" y="584" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">SVG/DXF + bore · STL extrude · timing mark</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Ported <code>risedwellPitch</code>, <code>camSurface</code> and <code>isUndercut</code> pass a Node sanity run: 42 mm peak on a 30 + 12 cam, undercut flagged at roller 40, clear at roller 4.</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> Only radial translating followers come from the exemplar. Automata mostly use <b>pivoting lever</b> followers, so that geometry still needs to be added (CamForge covers offset followers).</li>
+    </ul>
+  </div>
+
+  <div class="flow-panel" id="flow-gear">
+    <svg viewBox="0 0 800 520" width="800" height="520" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="gg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+      </defs>
+      <rect x="250" y="10" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="31" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">TARGET RATIO</text>
+      <text x="400" y="49" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">e.g. spring barrel → cam shaft, 1 turn per show</text>
+      <line x1="400" y1="62" x2="400" y2="100" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <rect x="230" y="100" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="121" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">TOOTH-COUNT SEARCH</text>
+      <text x="400" y="139" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">wheel/pinion per shaft · keep combos within tolerance</text>
+      <line x1="400" y1="152" x2="400" y2="190" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <rect x="230" y="190" width="340" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="211" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">MODULE × TEETH</text>
+      <text x="400" y="229" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">r = m·z/2 · centre distance = m(z₁+z₂)/2</text>
+      <line x1="400" y1="242" x2="400" y2="278" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <polygon points="400,278 470,313 400,348 330,313" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="317" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">z ≥ 14?</text>
+      <line x1="470" y1="313" x2="590" y2="313" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#gr)"/>
+      <text x="530" y="305" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">NO</text>
+      <rect x="590" y="287" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="308" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">WEAK MESH WARNING</text>
+      <text x="685" y="326" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">undercut flank; min 8 hard limit</text>
+      <line x1="400" y1="348" x2="400" y2="386" stroke="#56c47d" stroke-width="1.5" marker-end="url(#gg)"/>
+      <text x="412" y="371" fill="#56c47d" font-size="9" font-weight="600">YES</text>
+      <rect x="230" y="386" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="407" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">INVOLUTE OUTLINE</text>
+      <text x="400" y="425" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">gearOutline() · backlash · top land · root drop</text>
+      <line x1="400" y1="438" x2="400" y2="466" stroke="#56c47d" stroke-width="1.5" marker-end="url(#gg)"/>
+      <rect x="250" y="466" width="300" height="44" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="485" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">MESHED PAIR OUT</text>
+      <text x="400" y="500" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">sim · SVG/DXF with kerf · STL · inspection report</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Ported <code>gearOutline</code> gives tip radius rp + m and root radius rp − 1.25m for z = 8, 12, 20 and 60 (m = 2) in Node, with no NaNs.</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> True clockwork uses cycloidal-tooth wheels with 6–8-leaf pinions. The involute port is right for laser-cut and printed parts. For period-correct trains, see hdrpano/watchmaking.</li>
+    </ul>
+  </div>
+</section>
+
+<h3>Best practices to copy</h3>
+<ul>
+<li><strong>Store the cam as a pitch curve, not as the cut surface.</strong> Contact becomes exact (follower distance = pitch radius), and the cut surface is simply an inward offset by the roller radius.</li>
+<li><strong>Default to the cycloidal motion law.</strong> It has zero velocity <em>and</em> zero acceleration at every segment join, so there is no jerk and the automaton runs smoothly.</li>
+<li><strong>Gears are module × teeth, never a free radius.</strong> Quantize them at the model layer; centre distance = m·(z₁+z₂)/2.</li>
+<li><strong>One geometry function feeds the screen, SVG, DXF and STL.</strong> Never let the preview and the export compute shapes separately.</li>
+<li><strong>Refuse unbuildable parts loudly.</strong> Check cam undercut, Grashof (can the crank turn fully?), linkage binding, gears under 14 teeth, and watertight STL. Report each problem; don't silently emit bad geometry.</li>
+<li><strong>Keep the math free of UI dependencies, so it can be tested headless.</strong> Every template in the gallery runs for 6 s in tests and fails if it binds.</li>
+<li><strong>Rotating the cam profile is "timing".</strong> In automata, sequencing several cams on one shaft <em>is</em> the program.</li>
+</ul>
+<h2>Overall architecture (synthesis across the shortlist)</h2>
+<p>The good projects converge on a <strong>pipeline with a single geometry core</strong>:</p>
+<pre><code>Intent (motion you want / part you drew)
+  → Synthesis (motion law → cam pitch curve · path → four-bar / Fourier arms · ratio → tooth counts)
+  → Mechanism model (joints, links, cams, gears, Geneva — gears snapped to module × teeth)
+  → Solver (pose motors, Gauss-Newton constraints, one-sided cam contact + spring)
+  → Checks (undercut, pressure angle ≤ ~30°, Grashof, binding, min teeth)
+  → Outputs: canvas simulator · SVG/DXF (mm-true, kerf-compensated, CUT/ENGRAVE layers) · STL (extruded, layered, pin holes, manifest)
+</code></pre>
+<p><strong>Recommended browser stack for this project.</strong> Use plain TS modules for the math, with no framework in the core, in the style of gearforge and Linkage-Design. Use Canvas or SVG for the simulator. Write your own SVG/DXF R12 writers; they are about 150 lines (see gearforge). Use <code>three.js</code> or a small hand-rolled extruder plus an STL writer for 3D. The whole tool can be a single offline <code>index.html</code>, as CamFollowerJS and mechanical-characters are.</p>
+<h3>Best practices across the shortlist</h3>
+<ol>
+<li><strong>mm-true exports.</strong> SVG <code>width</code>/<code>height</code> in mm with a matching <code>viewBox</code>, and DXF R12 with a metric header (gearforge, mechanical-characters).</li>
+<li><strong>Kerf compensation at export.</strong> Offset each cut loop by kerf/2 so outer contours grow and holes shrink (gearforge).</li>
+<li><strong>Plot the diagnostics, not just the shape.</strong> Displacement, velocity, acceleration, pressure angle and curvature radius against cam angle (CamForge).</li>
+<li><strong>Inspection report for verifying a part after cutting.</strong> Pitch, base, tip and root diameters, span measurement, centre distance (gearforge).</li>
+<li><strong>Offline single file.</strong> No build is needed to <em>use</em> the tool (CamFollowerJS, mechanical-characters, gearforge).</li>
+<li><strong>Presets and a gallery.</strong> Ship working example mechanisms the user can poke at (Linkage-Design, mechanical-characters).</li>
+<li><strong>Synthesis should prefer the simplest machine.</strong> Try a four-bar first and fall back to arms or cams only when the fit is poor (Linkage-Design, mechanical-characters).</li>
+</ol>
+<h2>Reusable code</h2>
+<p>All snippets below are <strong>JS ports adapted from MIT-licensed sources</strong>. Keep the attribution comment.</p>
+<h3>1. Cam motion laws + rise/dwell/fall pitch curve</h3>
+<p><em>source_url:</em> https://github.com/MHSGhali/Linkage-Design/blob/main/src/cam.c and https://github.com/EkaEva/CamForge/blob/main/docs/ALGORITHMS.md · <em>license:</em> MIT · <em>reuse_risk:</em> ok</p>
+<pre><code class="language-js">// Adapted from MHSGhali/Linkage-Design (MIT) and EkaEva/CamForge (MIT).
+// Each law maps t∈[0,1] → displacement fraction s∈[0,1].
+export const MOTION_LAWS = {
+  uniform:    t =&gt; t,                                         // rigid shock at ends; low speed only
+  parabolic:  t =&gt; t &lt; 0.5 ? 2*t*t : 1 - 2*(1-t)**2,          // const accel; soft shock
+  harmonic:   t =&gt; (1 - Math.cos(Math.PI*t)) / 2,             // smooth velocity
+  cycloidal:  t =&gt; t - Math.sin(2*Math.PI*t) / (2*Math.PI),   // zero vel AND accel at ends — default
+  poly345:    t =&gt; 10*t**3 - 15*t**4 + 6*t**5,
+};
+
+/** Pitch radius (roller-centre path) of a rise / high-dwell / fall / low-dwell cam.
+ *  Angles in degrees; scaled down if they exceed 360. */
+export function risedwellPitch({ base, lift, rise, highDwell, fall, law = 'cycloidal' }) {
+  const L = MOTION_LAWS[law], k = Math.min(1, 360 / (rise + highDwell + fall));
+  const a = rise*k*Math.PI/180, b = highDwell*k*Math.PI/180, g = fall*k*Math.PI/180;
+  return phi =&gt; {
+    phi = ((phi % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    if (a &gt; 0 &amp;&amp; phi &lt; a)           return base + lift * L(phi / a);
+    if (phi &lt; a + b)                return base + lift;
+    if (g &gt; 0 &amp;&amp; phi &lt; a + b + g)   return base + lift * (1 - L((phi - a - b) / g));
+    return base;
+  };
+}
+</code></pre>
+<p><em>Adapt:</em> chain several segments to build an automaton "program" (e.g. nod, hold, turn). Stack one cam per figure motion on a common shaft, and use a phase offset for timing.</p>
+<h3>2. Roller-offset cam surface + undercut check</h3>
+<p><em>source_url:</em> https://github.com/MHSGhali/Linkage-Design/blob/main/src/cam.c · <em>license:</em> MIT · <em>reuse_risk:</em> ok</p>
+<pre><code class="language-js">// Adapted from MHSGhali/Linkage-Design (MIT).
+/** Physical cam surface = pitch curve offset INWARD by the roller radius. */
+export function camSurface(pitch, rollerR, n = 720) {
+  const h = 1e-5, pts = [];
+  for (let i = 0; i &lt; n; i++) {
+    const p = 2*Math.PI*i/n, r = pitch(p), dr = (pitch(p+h) - pitch(p-h)) / (2*h);
+    const c = Math.cos(p), s = Math.sin(p);
+    const tx = dr*c - r*s, ty = dr*s + r*c, tl = Math.hypot(tx, ty);   // tangent
+    const nx = ty/tl, ny = -tx/tl;                                     // outward normal
+    pts.push([r*c - nx*rollerR, r*s - ny*rollerR]);
+  }
+  return pts;
+}
+
+/** True if the offset folds back on itself: the roller can't reach into a notch → uncuttable. */
+export function isUndercut(pts) {
+  for (let i = 0; i &lt; pts.length; i++) {
+    const [a, b, d] = [pts[i], pts[(i+1)%pts.length], pts[(i+2)%pts.length]];
+    if (Math.hypot(...a) &lt; 1e-9) return true;
+    const e0 = [b[0]-a[0], b[1]-a[1]], e1 = [d[0]-b[0], d[1]-b[1]];
+    const l0 = Math.hypot(...e0), l1 = Math.hypot(...e1);
+    if (l0 &gt; 1e-12 &amp;&amp; l1 &gt; 1e-12 &amp;&amp; (e0[0]*e1[0] + e0[1]*e1[1]) / (l0*l1) &lt; 0) return true;
+  }
+  return false;
+}
+</code></pre>
+<p><em>Adapt:</em> when the check fails, shrink the roller (as Linkage-Design does) or warn. Pair it with CamForge's pressure-angle plot: keep the angle under about 30° for a translating follower.</p>
+<h3>3. Involute spur gear outline (module × teeth)</h3>
+<p><em>source_url:</em> https://github.com/MHSGhali/Linkage-Design/blob/main/src/gearing.c · <em>license:</em> MIT · <em>reuse_risk:</em> ok</p>
+<pre><code class="language-js">// Adapted from MHSGhali/Linkage-Design (MIT). Units: mm.
+const inv = a =&gt; Math.tan(a) - a;
+export const pitchRadius = (m, z) =&gt; m*z/2;
+export const centerDistance = (m, za, zb) =&gt; m*(za+zb)/2;          // the ONLY distance they mesh at
+export const teethForRadius = (m, r) =&gt; Math.max(8, Math.round(2*r/m));
+
+export function gearOutline({ m, z, pa = 20*Math.PI/180, backlash = 0, flank = 8 }) {
+  const rp = m*z/2, rb = rp*Math.cos(pa), ra = rp + m, rf = Math.max(rp - 1.25*m, 0.3*rp);
+  const half = Math.PI/(2*z) - backlash/(2*rp);
+  const fa = r =&gt; half + inv(pa) - (r &gt; rb ? inv(Math.acos(rb/r)) : 0);   // flank angle from tooth centreline
+  const solve = (want, lo, hi) =&gt; { for (let i = 0; i &lt; 60; i++) { const mid = (lo+hi)/2; fa(mid) &gt; want ? lo = mid : hi = mid; } return (lo+hi)/2; };
+  const pitchAng = 2*Math.PI/z;
+  let r0 = Math.max(rb, rf);
+  if (fa(r0) &gt; pitchAng/2 - 0.02) r0 = solve(pitchAng/2 - 0.02, r0, rp);   // keep some root arc
+  let r1 = ra; const land = 0.2*m*0.5/ra;
+  if (fa(ra) &lt; land) r1 = solve(land, rp, ra);                               // keep a top land
+  const P = (r, a) =&gt; [r*Math.cos(a), r*Math.sin(a)], out = [];
+  const drop = r0 &gt; rf + 1e-9, a0 = fa(r0), a1 = fa(r1);
+  for (let k = 0; k &lt; z; k++) {
+    const c = pitchAng*k;
+    if (drop) out.push(P(rf, c - a0));
+    for (let i = 0; i &lt; flank; i++) { const r = r0 + (r1-r0)*i/(flank-1); out.push(P(r, c - fa(r))); }
+    for (let i = 1; i &lt;= 3; i++) out.push(P(r1, c - a1 + 2*a1*i/4));
+    for (let i = flank-1; i &gt;= 0; i--) { const r = r0 + (r1-r0)*i/(flank-1); out.push(P(r, c + fa(r))); }
+    if (drop) out.push(P(rf, c + a0));
+    for (let i = 1; i &lt;= 4; i++) out.push(P(rf, c + a0 + (pitchAng - 2*a0)*i/5));
+  }
+  return out;   // closed CCW polygon, one tooth centred on +x
+}
+</code></pre>
+<p><em>Adapt:</em> the root-radius floor (<code>0.3*rp</code>) is a stand-in; Linkage-Design's own clamp wasn't copied. Rotate the second gear by half a pitch to mesh. For <strong>clockwork-style</strong> wheels and pinions (cycloidal or Belot teeth, low pinion counts like 6–8 leaves), see hdrpano/watchmaking; involute is fine for printed and laser-cut automata.</p>
+<h3>4. mm-true, kerf-compensated SVG export pattern</h3>
+<p><em>source_url:</em> https://github.com/1400130-collab/gearforge/blob/main/src/exporters.js · <em>license:</em> MIT · <em>reuse_risk:</em> ok</p>
+<pre><code class="language-js">// Pattern adapted from 1400130-collab/gearforge (MIT).
+export function toSVG(loops, { margin = 2 } = {}) {         // loops: [[x,y],...] in mm, already kerf-offset
+  const xs = loops.flat().map(p =&gt; p[0]), ys = loops.flat().map(p =&gt; p[1]);
+  const minX = Math.min(...xs), maxY = Math.max(...ys);
+  const w = Math.max(...xs) - minX + 2*margin, h = maxY - Math.min(...ys) + 2*margin;
+  const f = v =&gt; (Math.round(v*1e4)/1e4).toString();
+  const d = l =&gt; 'M ' + l.map(([x, y]) =&gt; `${f(x - minX + margin)} ${f(maxY - y + margin)}`).join(' L ') + ' Z';
+  return `&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;${f(w)}mm&quot; height=&quot;${f(h)}mm&quot; viewBox=&quot;0 0 ${f(w)} ${f(h)}&quot;&gt;
+  &lt;g id=&quot;CUT&quot; fill=&quot;none&quot; stroke=&quot;#ff0000&quot; stroke-width=&quot;0.1&quot;&gt;${loops.map(l =&gt; `&lt;path d=&quot;${d(l)}&quot;/&gt;`).join('')}&lt;/g&gt;
+&lt;/svg&gt;`;
+}
+</code></pre>
+<p><em>Adapt:</em> offset outer loops by +kerf/2 and holes by −kerf/2 before calling this. Add an <code>ENGRAVE</code> group (blue) for pitch circles and labels. DXF R12 is the same loops written as <code>POLYLINE</code>/<code>VERTEX</code>/<code>SEQEND</code>.</p>
+<h3>Withheld (no or unclear license, so ideas only)</h3>
+<ul>
+<li><strong>CamFollowerJS.</strong> Idea worth taking: author the cam as a <strong>flat displacement chart</strong> (x = cam angle, y = lift), which is how automata makers sketch, then wrap it to polar. Edit points with the mouse and save the cam as JSON.</li>
+<li><strong>clock-gear-train-calculator.</strong> Idea: brute-force tooth counts per shaft (wheel on the first shaft, wheel and pinion on the middle shafts, pinion on the last) and keep the combinations whose product of ratios hits the target within tolerance.</li>
+<li><strong>chrisspen/gears.</strong> Idea: OpenSCAD modules for spur, bevel, worm and rack parts. Bevel gears are what turn an automaton's motion through 90°.</li>
+</ul>
+<h2>Sources worth reading</h2>
+<ul>
+<li>Disney Research, <em>Computational Design of Mechanical Characters</em> (2013): paper and video, linked from n-nagaya's README.</li>
+<li><code>docs/</code> in CamFollowerJS: <em>Computer-Aided Design of Mechanical Automata</em> (PDF).</li>
+<li>KHK Gears, <em>Basic Gear Terminology and Calculation</em>, mirrored in dpellegr/PolyGear <code>docs/</code>.</li>
+</ul>
+<script>
+function showFlow(id) {
+  document.querySelectorAll('.flow-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.flow-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

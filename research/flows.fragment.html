@@ -1,0 +1,179 @@
+<h2 id="system-flows">System Flows</h2>
+<section class="flow-section">
+  <div class="flow-tabs">
+    <button class="flow-tab active" onclick="showFlow('flow-pipeline')">Design Pipeline</button>
+    <button class="flow-tab" onclick="showFlow('flow-cam')">Cam Design</button>
+    <button class="flow-tab" onclick="showFlow('flow-gear')">Gear Train</button>
+  </div>
+
+  <div class="flow-panel active" id="flow-pipeline">
+    <svg viewBox="0 0 800 640" width="800" height="640" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="pg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="pr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+        <marker id="pb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4f9cf9"/></marker>
+      </defs>
+      <rect x="250" y="10" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="31" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">INTENT</text>
+      <text x="400" y="49" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">draw a path · rise/dwell/fall table · draw a cam · target ratio</text>
+      <line x1="400" y1="62" x2="400" y2="100" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="100" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="121" text-anchor="middle" fill="#4f9cf9" font-size="13" font-weight="700">SYNTHESIS — synth / cam / gearing</text>
+      <text x="400" y="139" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">motion law → pitch curve · path → four-bar or Fourier arms · ratio → teeth</text>
+      <line x1="400" y1="152" x2="400" y2="190" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="190" width="340" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="211" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">MECHANISM MODEL</text>
+      <text x="400" y="229" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">joints, links, cams, gears, Geneva · gears snapped to module × whole teeth</text>
+      <line x1="400" y1="242" x2="400" y2="280" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <rect x="230" y="280" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="301" text-anchor="middle" fill="#4f9cf9" font-size="13" font-weight="700">SOLVER (per frame)</text>
+      <text x="400" y="319" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">pose motors · Gauss-Newton constraints · one-sided cam contact + spring</text>
+      <line x1="400" y1="332" x2="400" y2="368" stroke="#ffc850" stroke-width="1.5" marker-end="url(#pa)"/>
+
+      <polygon points="400,368 470,408 400,448 330,408" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="405" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">BUILDABLE?</text>
+      <text x="400" y="418" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">undercut·Grashof·bind</text>
+
+      <line x1="470" y1="408" x2="590" y2="408" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#pr)"/>
+      <text x="530" y="400" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">NO</text>
+      <rect x="590" y="382" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="403" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">WARN / AUTO-FIX</text>
+      <text x="685" y="421" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">shrink roller · flag &lt;14 teeth</text>
+      <path d="M685,382 L685,306 L572,306" fill="none" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4" marker-end="url(#pr)"/>
+      <text x="692" y="345" fill="#ff6b6b" font-size="9">re-solve</text>
+
+      <line x1="400" y1="448" x2="400" y2="490" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <text x="412" y="474" fill="#56c47d" font-size="9" font-weight="600">YES</text>
+
+      <rect x="250" y="490" width="300" height="44" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <text x="400" y="509" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="700">GEOMETRY CORE (one source)</text>
+      <text x="400" y="525" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">same outline feeds screen, SVG/DXF and STL</text>
+
+      <line x1="320" y1="534" x2="150" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <line x1="400" y1="534" x2="400" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <line x1="480" y1="534" x2="650" y2="572" stroke="#56c47d" stroke-width="1.5" marker-end="url(#pg)"/>
+      <rect x="40" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="150" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">SIMULATOR</text>
+      <text x="150" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">canvas animation + s/v/a plots</text>
+      <rect x="290" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">SVG / DXF</text>
+      <text x="400" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">mm-true · kerf · CUT/ENGRAVE layers</text>
+      <rect x="540" y="572" width="220" height="52" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="650" y="593" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">STL PARTS</text>
+      <text x="650" y="611" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">layers · pin holes · spacers · manifest</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Linkage-Design implements this full chain with headless tests over every gallery template (runs 6 s each, fails if it binds).</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> Fabrication method not chosen yet. SVG/DXF (laser/CNC/paper template) and STL (print) both stay in scope until it is.</li>
+      <li class="issue"><span class="flag-label issue">ISSUE</span> The exemplar is C/SDL2. The module boundaries port to TS, but none of its code runs in a browser as-is.</li>
+    </ul>
+  </div>
+
+  <div class="flow-panel" id="flow-cam">
+    <svg viewBox="0 0 800 600" width="800" height="600" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="ca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="cg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="cr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+        <marker id="cb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4f9cf9"/></marker>
+      </defs>
+      <polygon points="400,10 480,50 400,90 320,50" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="47" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">START FROM?</text>
+      <text x="400" y="60" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">motion or shape</text>
+
+      <line x1="320" y1="50" x2="200" y2="110" stroke="#4f9cf9" stroke-width="1" marker-end="url(#cb)"/>
+      <text x="240" y="70" fill="#4f9cf9" font-size="9" font-weight="600">MOTION</text>
+      <line x1="480" y1="50" x2="600" y2="110" stroke="#4f9cf9" stroke-width="1" marker-end="url(#cb)"/>
+      <text x="560" y="70" fill="#4f9cf9" font-size="9" font-weight="600">SHAPE</text>
+
+      <rect x="80" y="110" width="240" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="200" y="131" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">RISE / DWELL / FALL TABLE</text>
+      <text x="200" y="149" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">or a flat lift chart · law: cycloidal default</text>
+      <rect x="480" y="110" width="240" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="600" y="131" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">DRAWN CAM OUTLINE</text>
+      <text x="600" y="149" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">shaft at centroid · offset outward by roller</text>
+
+      <line x1="200" y1="162" x2="370" y2="200" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+      <line x1="600" y1="162" x2="430" y2="200" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+      <rect x="250" y="200" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="221" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">PITCH CURVE r(φ)</text>
+      <text x="400" y="239" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">roller-centre path, sampled every 2°</text>
+      <line x1="400" y1="252" x2="400" y2="290" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+
+      <rect x="250" y="290" width="300" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="311" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">CAM SURFACE</text>
+      <text x="400" y="329" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">pitch curve offset inward by roller radius</text>
+      <line x1="400" y1="342" x2="400" y2="378" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ca)"/>
+
+      <polygon points="400,378 470,413 400,448 330,413" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="410" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">UNDERCUT?</text>
+      <text x="400" y="423" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="9">offset folds back</text>
+      <line x1="470" y1="413" x2="590" y2="413" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#cr)"/>
+      <text x="530" y="405" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">YES</text>
+      <rect x="590" y="387" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="408" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">SHRINK ROLLER</text>
+      <text x="685" y="426" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">or raise base circle; warn</text>
+      <path d="M685,387 L685,316 L552,316" fill="none" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4" marker-end="url(#cr)"/>
+
+      <line x1="400" y1="448" x2="400" y2="486" stroke="#56c47d" stroke-width="1.5" marker-end="url(#cg)"/>
+      <text x="412" y="471" fill="#56c47d" font-size="9" font-weight="600">NO</text>
+      <rect x="250" y="486" width="300" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="507" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">SIMULATE + PLOT</text>
+      <text x="400" y="525" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">s, v, a, pressure angle vs φ · follower float if too fast</text>
+      <line x1="400" y1="538" x2="400" y2="552" stroke="#56c47d" stroke-width="1.5" marker-end="url(#cg)"/>
+      <rect x="250" y="552" width="300" height="40" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="569" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">EXPORT CAM</text>
+      <text x="400" y="584" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">SVG/DXF + bore · STL extrude · timing mark</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Ported <code>risedwellPitch</code>, <code>camSurface</code> and <code>isUndercut</code> pass a Node sanity run: 42 mm peak on a 30 + 12 cam, undercut flagged at roller 40, clear at roller 4.</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> Only radial translating followers come from the exemplar. Automata mostly use <b>pivoting lever</b> followers, so that geometry still needs to be added (CamForge covers offset followers).</li>
+    </ul>
+  </div>
+
+  <div class="flow-panel" id="flow-gear">
+    <svg viewBox="0 0 800 520" width="800" height="520" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs>
+        <marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffc850"/></marker>
+        <marker id="gg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#56c47d"/></marker>
+        <marker id="gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff6b6b"/></marker>
+      </defs>
+      <rect x="250" y="10" width="300" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="31" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">TARGET RATIO</text>
+      <text x="400" y="49" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">e.g. spring barrel → cam shaft, 1 turn per show</text>
+      <line x1="400" y1="62" x2="400" y2="100" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <rect x="230" y="100" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="121" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">TOOTH-COUNT SEARCH</text>
+      <text x="400" y="139" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">wheel/pinion per shaft · keep combos within tolerance</text>
+      <line x1="400" y1="152" x2="400" y2="190" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <rect x="230" y="190" width="340" height="52" rx="10" fill="rgba(255,200,80,0.1)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="211" text-anchor="middle" fill="#ffc850" font-size="13" font-weight="700">MODULE × TEETH</text>
+      <text x="400" y="229" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">r = m·z/2 · centre distance = m(z₁+z₂)/2</text>
+      <line x1="400" y1="242" x2="400" y2="278" stroke="#ffc850" stroke-width="1.5" marker-end="url(#ga)"/>
+      <polygon points="400,278 470,313 400,348 330,313" fill="rgba(255,200,80,0.08)" stroke="#ffc850" stroke-width="1.5"/>
+      <text x="400" y="317" text-anchor="middle" fill="#ffc850" font-size="10" font-weight="600">z ≥ 14?</text>
+      <line x1="470" y1="313" x2="590" y2="313" stroke="#ff6b6b" stroke-width="1.5" marker-end="url(#gr)"/>
+      <text x="530" y="305" text-anchor="middle" fill="#ff6b6b" font-size="9" font-weight="600">NO</text>
+      <rect x="590" y="287" width="190" height="52" rx="10" fill="rgba(255,107,107,0.08)" stroke="#ff6b6b" stroke-width="1.5"/>
+      <text x="685" y="308" text-anchor="middle" fill="#ff6b6b" font-size="12" font-weight="700">WEAK MESH WARNING</text>
+      <text x="685" y="326" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">undercut flank; min 8 hard limit</text>
+      <line x1="400" y1="348" x2="400" y2="386" stroke="#56c47d" stroke-width="1.5" marker-end="url(#gg)"/>
+      <text x="412" y="371" fill="#56c47d" font-size="9" font-weight="600">YES</text>
+      <rect x="230" y="386" width="340" height="52" rx="10" fill="rgba(79,156,249,0.08)" stroke="#4f9cf9" stroke-width="1"/>
+      <text x="400" y="407" text-anchor="middle" fill="#4f9cf9" font-size="12" font-weight="700">INVOLUTE OUTLINE</text>
+      <text x="400" y="425" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">gearOutline() · backlash · top land · root drop</text>
+      <line x1="400" y1="438" x2="400" y2="466" stroke="#56c47d" stroke-width="1.5" marker-end="url(#gg)"/>
+      <rect x="250" y="466" width="300" height="44" rx="10" fill="rgba(86,196,125,0.08)" stroke="#56c47d" stroke-width="1.5"/>
+      <text x="400" y="485" text-anchor="middle" fill="#56c47d" font-size="12" font-weight="700">MESHED PAIR OUT</text>
+      <text x="400" y="500" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="10">sim · SVG/DXF with kerf · STL · inspection report</text>
+    </svg>
+    <ul class="flag-list">
+      <li class="ok"><span class="flag-label ok">WORKS</span> Ported <code>gearOutline</code> gives tip radius rp + m and root radius rp − 1.25m for z = 8, 12, 20 and 60 (m = 2) in Node, with no NaNs.</li>
+      <li class="unclear"><span class="flag-label unclear">UNCLEAR</span> True clockwork uses cycloidal-tooth wheels with 6–8-leaf pinions. The involute port is right for laser-cut and printed parts. For period-correct trains, see hdrpano/watchmaking.</li>
+    </ul>
+  </div>
+</section>

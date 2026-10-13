@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Eight-Bar Xylophone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --paper:#EDF0EB; --panel:#F7F8F4; --ink:#1D2622; --muted:#5E6B66; --line:#C8CFC8; --grid:rgba(79,100,112,0.10);
+  --brass:#A8721C; --brass-soft:rgba(168,114,28,0.16); --steel:#4F6470; --steel-soft:rgba(79,100,112,0.12);
+  --warn:#B4472E; --warn-soft:rgba(180,71,46,0.12); --ok:#3F7D58; --ok-soft:rgba(63,125,88,0.12);
+  --bar:#D9C7A3; --bar-edge:#8A6A35;
+  --display:"IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+    --brass:#D7A548; --brass-soft:rgba(215,165,72,0.18); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.14);
+    --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+    --bar:#5A4B33; --bar-edge:#C9A66A;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+  --brass:#D7A548; --brass-soft:rgba(215,165,72,0.18); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.14);
+  --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+  --bar:#5A4B33; --bar-edge:#C9A66A;
+}
+* { box-sizing:border-box; }
+body { background:var(--paper); color:var(--ink); font:15px/1.55 var(--sans); padding-inline:16px; padding-block:20px 60px; }
+.wrap { max-width:1240px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 24px; border-bottom:1px solid var(--line); padding-bottom:12px; }
+h1 { font:400 2.1rem/1.1 var(--display); margin:0; text-wrap:balance; }
+header p { margin:0; color:var(--muted); max-width:64ch; }
+h2 { font:600 .78rem/1.2 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin:0; }
+.grid { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:20px; align-items:start; }
+@media (max-width:940px) { .grid { grid-template-columns:minmax(0,1fr); } }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+.panel-head { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+.side { display:flex; flex-direction:column; gap:16px; }
+.drawing { width:100%; height:auto; display:block; touch-action:manipulation; }
+.drawing .gridline { stroke:var(--grid); stroke-width:.5; }
+.drawing .bar { fill:var(--bar); stroke:var(--bar-edge); stroke-width:.8; cursor:pointer; transition:fill .15s; }
+.drawing .bar:hover, .drawing .bar.hit { fill:var(--brass-soft); }
+.drawing .node { fill:var(--panel); stroke:var(--bar-edge); stroke-width:.6; }
+.drawing .rail { fill:none; stroke:var(--steel); stroke-width:1; stroke-dasharray:3 2; }
+.drawing .arc { fill:none; stroke:var(--brass); stroke-width:.8; stroke-dasharray:2 2; }
+.drawing .ray { stroke:var(--muted); stroke-width:.4; }
+.drawing .label { font:600 9px var(--sans); fill:var(--ink); text-anchor:middle; pointer-events:none; }
+.drawing .small { font:500 6.5px var(--mono); fill:var(--muted); text-anchor:middle; pointer-events:none; }
+.drawing .tol { fill:var(--ok-soft); stroke:none; }
+.drawing .tol.bad { fill:var(--warn-soft); }
+.drawing .arm line { stroke:var(--ink); stroke-width:3; stroke-linecap:round; }
+.drawing .arm circle { fill:var(--brass); stroke:var(--ink); stroke-width:.8; }
+.drawing .arm { transition:transform .32s cubic-bezier(.3,.7,.2,1); }
+.drawing .pivot { fill:var(--ink); }
+@media (prefers-reduced-motion: reduce) { .drawing .arm { transition:none; } }
+.transport { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
+button { font:500 .85rem var(--sans); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:4px; padding:.35rem .8rem; cursor:pointer; }
+button:hover { border-color:var(--brass); }
+button.primary { background:var(--brass); border-color:var(--brass); color:var(--paper); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--brass); outline-offset:2px; }
+.fields { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px 14px; }
+.field { display:flex; flex-direction:column; gap:3px; font-size:.78rem; color:var(--muted); }
+input[type=number], select { font:500 .85rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:.3rem .4rem; width:100%; font-variant-numeric:tabular-nums; }
+select { font-family:var(--sans); }
+.note { font-size:.85rem; color:var(--muted); margin:0; max-width:72ch; }
+.note b { color:var(--ink); font-weight:600; }
+.big { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; }
+.big div { display:flex; flex-direction:column; gap:2px; }
+.big span { font-size:.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.big b { font:500 1.35rem var(--mono); font-variant-numeric:tabular-nums; }
+.table-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.85rem; font-variant-numeric:tabular-nums; }
+th, td { text-align:left; padding:.38rem .55rem; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { font-weight:600; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; }
+td.num, th.num { text-align:right; } td.num { font-family:var(--mono); }
+tbody tr { cursor:pointer; }
+tbody tr:hover td { background:var(--brass-soft); }
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chip { font:500 .74rem var(--sans); padding:.15rem .5rem; border-radius:999px; background:var(--ok-soft); color:var(--ok); }
+.chip.warn { background:var(--warn-soft); color:var(--warn); }
+.status { font-size:.82rem; color:var(--ok); min-height:1.2em; margin:0; }
+textarea { width:100%; height:110px; font:.75rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:8px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Eight-Bar Xylophone</h1>
+    <p>Bar lengths are worked out from beam physics, and the bars are set on an arc around the player's turning axis. The table gives the angle he has to turn to for each note, and how precisely he has to land. Angles are measured from straight ahead: minus is to his left (low notes), plus to his right. Click a bar or a row to hear it.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="viewHead">
+      <div class="panel-head"><h2 id="viewHead">Top view · 1:1 millimetres</h2>
+        <div class="transport"><button id="playScale" class="primary">Play the scale</button><button id="playTune">Play “Twinkle”</button></div>
+      </div>
+      <svg id="view" class="drawing" role="img" aria-label="Top view of the xylophone bars on an arc around the player's turning axis, with the mallet arm"></svg>
+      <div class="big" id="big"></div>
+      <div class="chips" id="checks"></div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="barsHead">
+        <h2 id="barsHead">Bars</h2>
+        <div class="fields">
+          <label class="field" for="material">Material<select id="material"></select></label>
+          <label class="field" for="start">Lowest note<select id="start"></select></label>
+          <label class="field" for="thick">Thickness (mm)<input id="thick" type="number" min="2" max="25" step="0.5"></label>
+          <label class="field" for="width">Width (mm)<input id="width" type="number" min="10" max="60" step="1"></label>
+          <label class="field" for="gap">Gap between bars (mm)<input id="gap" type="number" min="1" max="20" step="0.5"></label>
+          <label class="field" for="a4">Tuning, A4 (Hz)<input id="a4" type="number" min="415" max="466" step="1"></label>
+        </div>
+        <p class="note" id="matNote"></p>
+      </section>
+      <section class="panel" aria-labelledby="playerHead">
+        <h2 id="playerHead">Player</h2>
+        <div class="fields">
+          <label class="field" for="reach">Reach: axis to mallet head (mm)<input id="reach" type="number" min="60" max="400" step="5"></label>
+          <label class="field" for="head">Mallet head Ø (mm)<input id="head" type="number" min="4" max="30" step="1"></label>
+          <label class="field" for="body">His body radius at bar height (mm)<input id="body" type="number" min="5" max="150" step="1"></label>
+          <label class="field" for="layout">Bar layout<select id="layout"><option value="arc">On an arc (recommended)</option><option value="row">Straight row</option></select></label>
+        </div>
+        <p class="note" id="layoutNote"></p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="panel" aria-labelledby="tableHead">
+    <div class="panel-head"><h2 id="tableHead">Where he turns, and the bar cutting list</h2>
+      <div class="transport"><button id="copyTable">Copy table</button><button id="copySvg" class="primary">Copy layout SVG</button><button id="dlSvg">Download SVG</button></div>
+    </div>
+    <div class="table-wrap"><table id="table"></table></div>
+    <p class="note">The layout SVG is a full-size template: every bar outline with its two cord holes, the turning axis and the mallet arc. Print it at 100% to place the bars, or send it to a laser cutter (red = cut, blue = engrave). Cut metal bars about 3% long and file the ends to bring them up to pitch. Wood varies, so cut it 5% long and tune by thinning the middle underneath, which lowers the note.</p>
+    <p class="status" id="status" role="status"></p>
+    <textarea id="clipOut" hidden readonly aria-label="Text to copy"></textarea>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const DEG = Math.PI / 180;
+const fmt = (v, n) => Number.isFinite(+v) ? (+v).toFixed(n) : '–';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* Free-free uniform bar, fundamental: f = (β²/2π)·√(EI/ρA)/L² with β = 4.7300 and I/A = t²/12
+   → f = 1.0279 · c · t / L², where c = √(E/ρ). Nodes sit 0.2242·L in from each end.
+   Overtones of a plain (not undercut) bar: 2.756, 5.404 × the fundamental. */
+const K = (4.7300 ** 2 / (2 * Math.PI)) / Math.sqrt(12);
+const NODE = 0.2242, OVERTONES = [1, 2.7565, 5.4039];
+const MATERIALS = {
+  aluminium: { label: 'Aluminium 6061', E: 68.9e9, rho: 2700, decay: 2.4, wood: false },
+  brass:     { label: 'Brass (C260)', E: 110e9, rho: 8530, decay: 2.8, wood: false },
+  steel:     { label: 'Mild steel', E: 200e9, rho: 7850, decay: 3.2, wood: false },
+  maple:     { label: 'Hard maple', E: 12.6e9, rho: 705, decay: 0.35, wood: true },
+  padauk:    { label: 'Padauk', E: 11.7e9, rho: 745, decay: 0.45, wood: true },
+};
+const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const MAJOR = [0, 2, 4, 5, 7, 9, 11, 12];
+const STARTS = [];
+for (const oct of [4, 5, 6]) for (const pc of [0, 2, 4, 5, 7, 9]) STARTS.push(12 * (oct + 1) + pc);   // MIDI numbers
+const noteName = m => NAMES[m % 12] + (Math.floor(m / 12) - 1);
+
+const DEFAULTS = { material: 'aluminium', start: 84, thick: 6, width: 25, gap: 5, a4: 440, reach: 135, head: 10, layout: 'arc', body: 35 };
+const STORE = 'eight-bar-xylophone-v1';
+let S; try { S = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(STORE)) || {}); } catch (e) { S = { ...DEFAULTS }; }
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } };
+
+/* ---------- Design ---------- */
+let X = null;
+function design() {
+  const mat = MATERIALS[S.material] || MATERIALS.aluminium;
+  const c = Math.sqrt(mat.E / mat.rho), t = S.thick / 1000;
+  const pitch = S.width + S.gap, R = S.reach;
+  const bars = MAJOR.map((st, i) => {
+    const midi = S.start + st, f = S.a4 * 2 ** ((midi - 69) / 12);
+    const L = Math.sqrt(K * c * t / f) * 1000;                       // mm
+    const x = (i - 3.5) * pitch;                                     // across the player, low notes on the left
+    return { i, midi, name: noteName(midi), f, L, x };
+  });
+  const maxX = Math.max(...bars.map(b => Math.abs(b.x)));
+  // straight row: bar centres on one line, at the distance that suits the middle bars
+  const rowY = Math.sqrt(Math.max(1, R * R - (pitch / 2) ** 2));
+  let reachable = true;
+  for (const b of bars) {
+    if (Math.abs(b.x) >= R) { reachable = false; b.angle = NaN; b.y = S.layout === 'arc' ? 0 : rowY; b.miss = NaN; continue; }
+    b.angle = Math.asin(b.x / R) / DEG;                              // turn from straight ahead: + = to his right (high notes), − = to his left
+    const tipY = Math.sqrt(R * R - b.x * b.x);
+    b.y = S.layout === 'arc' ? tipY : rowY;                          // distance of the bar centre from the axis
+    b.miss = tipY - b.y;                                             // where along the bar the mallet lands, from its centre
+  }
+  // how far off the angle can be before the head reaches a bar edge (keep 1 mm clear of the edge)
+  const lateral = Math.max(0, S.width / 2 - S.head / 2 - 1);
+  for (const b of bars) {
+    if (!Number.isFinite(b.angle)) continue;
+    const a = b.angle * DEG;
+    // exact: the turn at which the head's edge reaches 1 mm from either side of the bar
+    const up = Math.asin(Math.min(1, (b.x + lateral) / R)) - a, down = a - Math.asin(Math.max(-1, (b.x - lateral) / R));
+    b.tol = Math.min(up, down) / DEG;                                 // ± degrees
+    const sweet = 0.15 * b.L;                                         // centre zone: well away from the nodes at 22.4%
+    b.sweetOk = Math.abs(b.miss) <= sweet;
+    b.nodeA = -b.L / 2 + NODE * b.L; b.nodeB = b.L / 2 - NODE * b.L;   // along the bar, from its centre
+  }
+  for (let i = 0; i < bars.length; i++) bars[i].step = i ? bars[i].angle - bars[i - 1].angle : NaN;
+  const sweep = bars[7].angle - bars[0].angle;
+  const minStep = Math.min(...bars.slice(1).map(b => b.step));
+  const minTol = Math.min(...bars.map(b => b.tol));
+  // closest any bar comes to the turning axis (the player's body sits there)
+  const clear = Math.min(...bars.map(b => { const dx = Math.max(0, Math.abs(b.x) - S.width / 2), dy = Math.max(0, Math.abs(b.y) - b.L / 2); return Math.hypot(dx, dy); }));
+  X = { mat, c, bars, pitch, R, sweep, minStep, minTol, reachable, lateral, rowY, clear };
+}
+
+/* ---------- Top view (SVG, y up the page = away from the player) ---------- */
+function drawView() {
+  const { bars, R } = X, svg = $('view');
+  const Lmax = Math.max(...bars.map(b => b.L));
+  const xMin = Math.min(...bars.map(b => b.x)) - S.width, xMax = Math.max(...bars.map(b => b.x)) + S.width;
+  const yTop = -(Math.max(...bars.map(b => b.y)) + Lmax / 2 + 14), yBot = 26;
+  const vx0 = Math.min(xMin, -R) - 10, vx1 = Math.max(xMax, R) + 10;
+  svg.setAttribute('viewBox', `${vx0} ${yTop} ${vx1 - vx0} ${yBot - yTop}`);
+  let g = '';
+  for (let x = Math.ceil(vx0 / 10) * 10; x <= vx1; x += 10) g += `<line class="gridline" x1="${x}" y1="${yTop}" x2="${x}" y2="${yBot}"/>`;
+  for (let y = Math.ceil(yTop / 10) * 10; y <= yBot; y += 10) g += `<line class="gridline" x1="${vx0}" y1="${y}" x2="${vx1}" y2="${y}"/>`;
+  // mallet arc and the rays to each bar
+  g += `<path class="arc" d="M ${-R} 0 A ${R} ${R} 0 0 1 ${R} 0"/>`;
+  // support rails through the node holes
+  for (const side of ['nodeA', 'nodeB']) g += `<polyline class="rail" points="${bars.map(b => `${b.x},${-(b.y + b[side])}`).join(' ')}"/>`;
+  for (const b of bars) {
+    if (!Number.isFinite(b.angle)) continue;
+    const a = b.angle * DEG, tx = R * Math.sin(a), ty = -R * Math.cos(a);
+    g += `<line class="ray" x1="0" y1="0" x2="${tx}" y2="${ty}"/>`;
+  }
+  for (const b of bars) {
+    const x0 = b.x - S.width / 2, yc = -b.y;
+    g += `<rect class="bar" data-i="${b.i}" x="${x0}" y="${yc - b.L / 2}" width="${S.width}" height="${b.L}" rx="1.5"><title>${b.name}: ${fmt(b.f, 1)} Hz, ${fmt(b.L, 1)} mm</title></rect>`;
+    // landing zone for the mallet centre on this bar
+    if (Number.isFinite(b.miss)) g += `<rect class="tol ${b.sweetOk ? '' : 'bad'}" x="${b.x - X.lateral}" y="${yc - b.miss - 2}" width="${2 * X.lateral}" height="4" pointer-events="none"/>`;
+    for (const n of [b.nodeA, b.nodeB]) g += `<circle class="node" cx="${b.x}" cy="${yc - n}" r="1.5"/>`;
+    g += `<text class="label" x="${b.x}" y="${yc - b.L / 2 - 4}">${esc(b.name)}</text>`;
+    g += `<text class="small" x="${b.x}" y="${yc + b.L / 2 + 8}">${fmt(b.angle, 1)}°</text>`;
+  }
+  g += `<g class="arm" id="arm"><line x1="0" y1="0" x2="0" y2="${-R}"/><circle cx="0" cy="${-R}" r="${S.head / 2}"/></g>`;
+  g += `<circle class="pivot" cx="0" cy="0" r="3"/><text class="small" x="0" y="14">turning axis</text>`;
+  svg.innerHTML = g;
+  setArm(armAngle, false);
+  svg.querySelectorAll('.bar').forEach(el => el.addEventListener('click', () => strike(+el.dataset.i)));
+}
+let armAngle = 0;
+function setArm(deg, animate = true) {
+  armAngle = deg; const arm = $('arm'); if (!arm) return;
+  if (!animate) arm.style.transition = 'none';
+  arm.style.transform = `rotate(${deg}deg)`; arm.style.transformOrigin = '0 0';
+  if (!animate) { arm.getBoundingClientRect(); arm.style.transition = ''; }
+}
+
+/* ---------- Summary, checks, table ---------- */
+function renderInfo() {
+  const { bars, sweep, minStep, minTol, mat, c } = X;
+  $('big').innerHTML = `
+    <div><span>Total turn</span><b>${fmt(sweep, 1)}°</b></div>
+    <div><span>Smallest step</span><b>${fmt(minStep, 1)}°</b></div>
+    <div><span>Must land within</span><b>±${fmt(minTol, 1)}°</b></div>
+    <div><span>Longest bar</span><b>${fmt(bars[0].L, 1)} mm</b></div>`;
+  const chips = [];
+  if (!X.reachable) chips.push('<span class="chip warn">The reach is shorter than half the row of bars; the end bars can’t be reached. Increase the reach.</span>');
+  else {
+    if (sweep > 120) chips.push(`<span class="chip warn">${fmt(sweep, 0)}° is a lot of turning for one arm. Lengthen the reach, or use two arms with four bars each.</span>`);
+    else chips.push(`<span class="chip">One arm can cover all eight bars (${fmt(sweep, 0)}° of turn)</span>`);
+    if (minTol < 1.5) chips.push(`<span class="chip warn">Only ±${fmt(minTol, 1)}° of play: hard for a cam and linkage to hold. Use wider bars or a smaller mallet head.</span>`);
+    else chips.push(`<span class="chip">±${fmt(minTol, 1)}° landing window is workable for a cam</span>`);
+    const bad = bars.filter(b => !b.sweetOk);
+    if (bad.length) chips.push(`<span class="chip warn">On a straight row the mallet lands too near the cord on ${bad.map(b => b.name).join(', ')}. Use the arc layout.</span>`);
+    else chips.push('<span class="chip">Every strike lands in the middle of its bar, clear of the cords</span>');
+    if (X.clear < S.body) chips.push(`<span class="chip warn">A bar comes within ${fmt(X.clear, 0)} mm of the turning axis; his body needs ${S.body} mm. Increase the reach.</span>`);
+    else chips.push(`<span class="chip">Bars stay ${fmt(X.clear, 0)} mm from the axis, clear of his body</span>`);
+    if (bars[0].L > 320) chips.push('<span class="chip warn">Long bars: a higher lowest note or thinner bars make the instrument smaller.</span>');
+  }
+  $('checks').innerHTML = chips.join('');
+  $('matNote').innerHTML = `${mat.label}: sound travels at <b>${fmt(c, 0)} m/s</b> along the bar. Bar length = √(1.028 · c · thickness ÷ frequency).${mat.wood ? ' <b>Wood varies by about ±10%</b>, so treat the lengths as a starting point and tune each bar.' : ''}`;
+  $('layoutNote').innerHTML = S.layout === 'arc'
+    ? 'Each bar’s centre sits on the circle swept by the mallet, so a <b>pure turn</b> lands on every bar’s centre. The bars stay parallel; the row is curved.'
+    : `Bars in a straight line ${fmt(X.rowY, 1)} mm from the axis. The mallet lands nearer or farther along each bar as he turns; the green marks show where.`;
+  const rows = bars.map(b => `<tr data-i="${b.i}"><td><b>${esc(b.name)}</b></td><td class="num">${fmt(b.f, 1)}</td><td class="num">${fmt(b.L, 1)}</td><td class="num">${fmt(b.L * NODE, 1)}</td><td class="num">${fmt(b.angle, 1)}°</td><td class="num">${b.i ? (b.step >= 0 ? '+' : '') + fmt(b.step, 1) + '°' : '–'}</td><td class="num">±${fmt(b.tol, 1)}°</td><td class="num">${fmt(b.y, 1)}</td><td class="num">${fmt(b.miss, 1)}</td></tr>`).join('');
+  $('table').innerHTML = `<thead><tr><th>Note</th><th class="num">Hz</th><th class="num">Bar length</th><th class="num">Cord holes from each end</th><th class="num">Turn to</th><th class="num">Step</th><th class="num">Land within</th><th class="num">Bar centre from axis</th><th class="num">Lands off centre</th></tr></thead><tbody>${rows}</tbody>`;
+  $('table').querySelectorAll('tbody tr').forEach(tr => tr.addEventListener('click', () => strike(+tr.dataset.i)));
+}
+
+/* ---------- Sound: three partials of a plain free bar ---------- */
+let AC = null;
+function ring(f) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const now = AC.currentTime, decay = X.mat.decay, out = AC.createGain(); out.gain.value = 0.25; out.connect(AC.destination);
+    OVERTONES.forEach((r, k) => {
+      if (f * r > 18000) return;
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.frequency.value = f * r; o.type = 'sine';
+      const amp = [1, 0.32, 0.12][k], d = decay / (1 + 1.6 * k);
+      g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(amp, now + 0.003); g.gain.exponentialRampToValueAtTime(0.0005, now + d);
+      o.connect(g); g.connect(out); o.start(now); o.stop(now + d + 0.05);
+    });
+  } catch (e) { /* audio unavailable: the drawing still moves */ }
+}
+let seqTimer = null;
+function strike(i, delay = 0) {
+  const b = X.bars[i]; if (!b || !Number.isFinite(b.angle)) return;
+  // SVG y points down the page, so a turn toward +x is a clockwise rotate()
+  setArm(b.angle);
+  setTimeout(() => {
+    ring(b.f);
+    const el = document.querySelector(`.bar[data-i="${i}"]`); if (el) { el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), 220); }
+    flash(`${b.name}: turn to ${fmt(b.angle, 1)}°, ${fmt(b.f, 1)} Hz`);
+  }, delay || 320);
+}
+function playSeq(seq, beat = 420) {
+  clearTimeout(seqTimer); let k = 0;
+  const next = () => { if (k >= seq.length) return; const [i, beats] = seq[k++]; if (i >= 0) strike(i); seqTimer = setTimeout(next, beat * beats); };
+  next();
+}
+$('playScale').onclick = () => playSeq([0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0].map(i => [i, 1]), 380);
+// Twinkle Twinkle in the bar indices of a major scale: C C G G A A G, F F E E D D C
+$('playTune').onclick = () => playSeq([[0,1],[0,1],[4,1],[4,1],[5,1],[5,1],[4,2],[3,1],[3,1],[2,1],[2,1],[1,1],[1,1],[0,2]], 430);
+
+/* ---------- Exports ---------- */
+function layoutSVG() {
+  const { bars, R } = X, f = v => (Math.round(v * 1000) / 1000).toString();
+  const Lmax = Math.max(...bars.map(b => b.L));
+  const xMin = Math.min(-R, ...bars.map(b => b.x - S.width)) - 10, xMax = Math.max(R, ...bars.map(b => b.x + S.width)) + 10;
+  const yMin = -(Math.max(...bars.map(b => b.y)) + Lmax / 2 + 12), yMax = 20;
+  const W = xMax - xMin, H = yMax - yMin, tx = x => f(x - xMin), ty = y => f(y - yMin);
+  const cut = [], eng = [];
+  for (const b of bars) {
+    const yc = -b.y;
+    cut.push(`<rect x="${tx(b.x - S.width / 2)}" y="${ty(yc - b.L / 2)}" width="${f(S.width)}" height="${f(b.L)}"/>`);
+    for (const n of [b.nodeA, b.nodeB]) cut.push(`<circle cx="${tx(b.x)}" cy="${ty(yc - n)}" r="1.5"/>`);
+    eng.push(`<text x="${tx(b.x)}" y="${ty(yc - b.L / 2 - 3)}" font-size="4" text-anchor="middle" font-family="sans-serif" stroke="none" fill="#0000ff">${esc(b.name)} ${f(Math.round(b.f * 10) / 10)}Hz ${f(Math.round(b.angle * 10) / 10)}°</text>`);
+    const a = b.angle * DEG; eng.push(`<line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(R * Math.sin(a))}" y2="${ty(-R * Math.cos(a))}"/>`);
+  }
+  eng.push(`<path d="M ${tx(-R)} ${ty(0)} A ${f(R)} ${f(R)} 0 0 1 ${tx(R)} ${ty(0)}" stroke-dasharray="2 2"/>`, `<circle cx="${tx(0)}" cy="${ty(0)}" r="2"/>`, `<text x="${tx(0)}" y="${ty(8)}" font-size="4" text-anchor="middle" font-family="sans-serif" stroke="none" fill="#0000ff">turning axis · reach ${f(R)} mm</text>`);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}">
+  <!-- Eight-Bar Xylophone, top view, 1:1 mm. ${esc(X.mat.label)} ${S.thick} mm thick, ${S.width} mm wide. Red = cut, blue = engrave/guide. -->
+  <g id="CUT" fill="none" stroke="#ff0000" stroke-width="0.1">
+    ${cut.join('\n    ')}
+  </g>
+  <g id="ENGRAVE" fill="none" stroke="#0000ff" stroke-width="0.1">
+    ${eng.join('\n    ')}
+  </g>
+</svg>`;
+}
+function tableText() {
+  const lines = ['note,hz,length_mm,cord_hole_from_each_end_mm,turn_to_deg,step_deg,land_within_deg,centre_from_axis_mm,lands_off_centre_mm'];
+  for (const b of X.bars) lines.push([b.name, fmt(b.f, 2), fmt(b.L, 2), fmt(b.L * NODE, 2), fmt(b.angle, 2), b.i ? fmt(b.step, 2) : '', fmt(b.tol, 2), fmt(b.y, 2), fmt(b.miss, 2)].join(','));
+  lines.push(`# ${X.mat.label}, ${S.thick} mm thick, ${S.width} mm wide, gap ${S.gap} mm, reach ${S.reach} mm, A4 = ${S.a4} Hz, ${S.layout} layout`);
+  return lines.join('\n');
+}
+function flash(m) { $('status').textContent = m; clearTimeout(flash.t); flash.t = setTimeout(() => $('status').textContent = '', 4000); }
+function copyText(t, ok) {
+  const fb = () => { const ta = $('clipOut'); ta.hidden = false; ta.value = t; ta.focus(); ta.select(); flash('Copying wasn’t allowed here. The text is selected below: press Ctrl+C or Cmd+C.'); };
+  try { navigator.clipboard.writeText(t).then(() => flash(ok), fb); } catch (e) { fb(); }
+}
+let framed = true; try { framed = window.self !== window.top; } catch (e) { framed = true; }
+$('dlSvg').hidden = framed;
+$('copySvg').onclick = () => copyText(layoutSVG(), 'Layout SVG copied. Paste it into a file named xylophone-layout.svg.');
+$('copyTable').onclick = () => copyText(tableText(), 'Table copied (CSV). Paste it into a spreadsheet.');
+$('dlSvg').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([layoutSVG()], { type: 'image/svg+xml' })); a.download = 'xylophone-layout.svg'; a.click(); };
+
+/* ---------- Controls ---------- */
+$('material').innerHTML = Object.entries(MATERIALS).map(([k, m]) => `<option value="${k}">${m.label}${m.wood ? ' (wood, ±10%)' : ''}</option>`).join('');
+$('start').innerHTML = STARTS.map(m => `<option value="${m}">${noteName(m)} major (${noteName(m)}–${noteName(m + 12)})</option>`).join('');
+const NUMS = ['thick', 'width', 'gap', 'a4', 'reach', 'head', 'body'];
+function bind() {
+  $('material').value = S.material; $('start').value = S.start; $('layout').value = S.layout;
+  NUMS.forEach(k => $(k).value = S[k]);
+  $('material').onchange = e => { S.material = e.target.value; update(); };
+  $('start').onchange = e => { S.start = +e.target.value; update(); };
+  $('layout').onchange = e => { S.layout = e.target.value; update(); };
+  NUMS.forEach(k => $(k).oninput = e => { const v = +e.target.value; if (Number.isFinite(v) && v > 0) { S[k] = v; update(); } });
+}
+function update() { design(); drawView(); renderInfo(); save(); }
+bind(); update();
+</script>
+
+</body>
+</html>

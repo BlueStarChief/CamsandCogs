@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Xylophone Player Cams</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --paper:#EDF0EB; --panel:#F7F8F4; --ink:#1D2622; --muted:#5E6B66; --line:#C8CFC8; --grid:rgba(79,100,112,0.10);
+  --brass:#A8721C; --brass-soft:rgba(168,114,28,0.16); --steel:#4F6470; --steel-soft:rgba(79,100,112,0.13);
+  --warn:#B4472E; --warn-soft:rgba(180,71,46,0.12); --ok:#3F7D58; --ok-soft:rgba(63,125,88,0.12);
+  --bar:#D9C7A3; --bar-edge:#8A6A35;
+  --display:"IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+    --brass:#D7A548; --brass-soft:rgba(215,165,72,0.18); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.15);
+    --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+    --bar:#5A4B33; --bar-edge:#C9A66A;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper:#121615; --panel:#1A1F1E; --ink:#E2E6E1; --muted:#95A09B; --line:#2F3735; --grid:rgba(143,166,178,0.08);
+  --brass:#D7A548; --brass-soft:rgba(215,165,72,0.18); --steel:#8FA6B2; --steel-soft:rgba(143,166,178,0.15);
+  --warn:#E07A5F; --warn-soft:rgba(224,122,95,0.14); --ok:#7BBF92; --ok-soft:rgba(123,191,146,0.14);
+  --bar:#5A4B33; --bar-edge:#C9A66A;
+}
+* { box-sizing:border-box; }
+body { background:var(--paper); color:var(--ink); font:15px/1.55 var(--sans); padding-inline:16px; padding-block:20px 60px; }
+.wrap { max-width:1280px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+header { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 24px; border-bottom:1px solid var(--line); padding-bottom:12px; }
+h1 { font:400 2.1rem/1.1 var(--display); margin:0; text-wrap:balance; }
+header p { margin:0; color:var(--muted); max-width:66ch; }
+h2 { font:600 .78rem/1.2 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin:0; }
+.panel { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px; display:flex; flex-direction:column; gap:12px; min-width:0; }
+.panel-head { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+.views { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:20px; }
+@media (max-width:900px) { .views { grid-template-columns:minmax(0,1fr); } }
+canvas { display:block; width:100%; }
+#top { height:380px; } #cams { height:380px; } .chart { height:150px; }
+.transport { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; }
+.readout { font:500 .88rem var(--mono); font-variant-numeric:tabular-nums; color:var(--muted); }
+.readout b { color:var(--ink); font-weight:500; }
+button { font:500 .85rem var(--sans); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:4px; padding:.35rem .8rem; cursor:pointer; }
+button:hover { border-color:var(--brass); }
+button.primary { background:var(--brass); border-color:var(--brass); color:var(--paper); }
+button[aria-pressed="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--brass); outline-offset:2px; }
+label.inline { display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--muted); }
+input[type=range] { accent-color:var(--brass); width:140px; }
+input[type=number], input[type=text], select { font:500 .85rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:.3rem .4rem; width:100%; font-variant-numeric:tabular-nums; }
+select { font-family:var(--sans); }
+.fields { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px 14px; }
+.field { display:flex; flex-direction:column; gap:3px; font-size:.78rem; color:var(--muted); }
+.field.wide { grid-column:1 / -1; }
+.note { font-size:.85rem; color:var(--muted); margin:0; max-width:76ch; }
+.note b { color:var(--ink); font-weight:600; }
+.heard { font:500 .95rem var(--mono); display:flex; flex-wrap:wrap; gap:4px; }
+.heard span { padding:.1rem .4rem; border-radius:3px; background:var(--ok-soft); color:var(--ok); }
+.heard span.miss { background:var(--warn-soft); color:var(--warn); }
+.heard span.now { outline:2px solid var(--brass); }
+.bottom { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:20px; align-items:start; }
+@media (max-width:900px) { .bottom { grid-template-columns:minmax(0,1fr); } }
+.checks { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+.checks li { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; align-items:baseline; }
+.checks .what { font-weight:600; }
+.checks .how { grid-column:2; font-size:.84rem; color:var(--muted); }
+.checks .how b { font:500 .84rem var(--mono); color:var(--ink); }
+.chip { font:500 .74rem var(--sans); padding:.15rem .5rem; border-radius:999px; background:var(--ok-soft); color:var(--ok); white-space:nowrap; }
+.chip.warn { background:var(--warn-soft); color:var(--warn); }
+.table-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:.84rem; font-variant-numeric:tabular-nums; }
+th, td { text-align:left; padding:.35rem .55rem; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { font-weight:600; color:var(--muted); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; }
+td.num, th.num { text-align:right; } td.num { font-family:var(--mono); }
+.status { font-size:.82rem; color:var(--ok); min-height:1.2em; margin:0; }
+textarea { width:100%; height:110px; font:.75rem var(--mono); color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:8px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Xylophone Player Cams</h1>
+    <p>Two cams on one shaft play the tune. The <b>turn cam</b> pushes a gear rack that turns his body to each bar. The <b>strike cam</b> is a snail cam that lifts the mallet, holds it up while he turns, then drops it. The notes you hear come from the mechanism itself: wherever the mallet lands, that bar plays.</p>
+  </header>
+
+  <div class="views">
+    <section class="panel" aria-labelledby="topHead">
+      <div class="panel-head"><h2 id="topHead">Top view · the xylophone and his arm</h2></div>
+      <canvas id="top" aria-label="Top view: bars, the turning axis and the mallet arm moving from the cams"></canvas>
+    </section>
+    <section class="panel" aria-labelledby="camHead">
+      <div class="panel-head"><h2 id="camHead">The two cams · face-on, same shaft</h2></div>
+      <canvas id="cams" aria-label="Turn cam with its rack follower, and strike cam with its drop and push rod"></canvas>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Playback">
+    <div class="transport">
+      <button id="play" class="primary">Pause</button>
+      <button id="sound" aria-pressed="false">Sound off</button>
+      <label class="inline" for="scrub">Cam angle <input id="scrub" type="range" min="0" max="359.5" step="0.5" value="0"> <span class="readout"><b id="angleOut">0°</b></span></label>
+      <label class="inline" for="speed">Tune length <input id="speed" type="range" min="4" max="30" step="1"> <span class="readout" id="speedOut"></span></label>
+      <span class="readout">Turned to <b id="yawOut">0°</b></span>
+      <span class="readout">Mallet <b id="headOut">0 mm</b> above the bars</span>
+    </div>
+    <div><h2>Heard from the mechanism</h2></div>
+    <div class="heard" id="heard"></div>
+    <canvas class="chart" id="chartTurn" aria-label="Turn angle over one cam revolution, with each bar's angle"></canvas>
+    <canvas class="chart" id="chartStrike" aria-label="Mallet height over one cam revolution, with the turning moves shaded"></canvas>
+  </section>
+
+  <div class="bottom">
+    <section class="panel" aria-labelledby="proofHead">
+      <div class="panel-head"><h2 id="proofHead">Proof: checked over a full turn</h2></div>
+      <p class="note">Every check samples the cams every 0.05° (7,200 points per turn). Hits are found by watching the mallet come down, not read from the tune.</p>
+      <ul class="checks" id="checks"></ul>
+    </section>
+    <section class="panel" aria-labelledby="setHead">
+      <h2 id="setHead">Tune and mechanism</h2>
+      <div class="fields">
+        <label class="field wide" for="tune">Tune: notes C D E F G A B C', a number for longer notes (G2), “-” for a rest<input id="tune" type="text" autocomplete="off" spellcheck="false"></label>
+        <label class="field" for="pz">Pinion teeth<input id="pz" type="number" min="8" max="60" step="1"></label>
+        <label class="field" for="pm">Pinion module (mm)<input id="pm" type="number" min="0.3" max="2" step="0.05"></label>
+        <label class="field" for="tb">Turn cam base radius (mm)<input id="tb" type="number" min="20" max="150" step="1"></label>
+        <label class="field" for="sb">Strike cam base radius (mm)<input id="sb" type="number" min="15" max="120" step="1"></label>
+        <label class="field" for="lever">Strike lever (mm)<input id="lever" type="number" min="4" max="60" step="1"></label>
+        <label class="field" for="raise">Mallet lift (mm)<input id="raise" type="number" min="5" max="60" step="1"></label>
+        <label class="field" for="clear">Clearance while turning (mm)<input id="clear" type="number" min="1" max="40" step="1"></label>
+        <label class="field" for="move">Turning time (% of a beat)<input id="move" type="number" min="15" max="90" step="5"></label>
+        <label class="field" for="rise">Mallet rise (% of a beat)<input id="rise" type="number" min="10" max="60" step="5"></label>
+        <label class="field" for="tlaw">Turn motion<select id="tlaw"></select></label>
+        <label class="field" for="slaw">Mallet rise motion<select id="slaw"></select></label>
+      </div>
+      <p class="note">Each beat goes: <b>strike</b> (mallet drops onto the bar), <b>lift</b> (mallet rises), then <b>turn</b> to the next bar, as long as the mallet is high enough. The xylophone is the Eight-Bar design: C6–C7 aluminium bars on a 135 mm arc.</p>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="partsHead">
+    <div class="panel-head"><h2 id="partsHead">Parts to make</h2>
+      <div class="transport"><button id="copySpec">Copy sizes</button><button id="copySvg" class="primary">Copy cams SVG</button><button id="dlSvg">Download SVG</button><button id="reset">Reset to example</button></div>
+    </div>
+    <div class="table-wrap"><table id="parts"></table></div>
+    <p class="note">The SVG holds both cams and the pinion at true millimetre size: red lines are cuts, blue is engraving. Both cams share the shaft, so line up their engraved start marks with each other and point them at the followers. The turn cam's accuracy matters most: see “Land within” above.</p>
+    <p class="status" id="status" role="status"></p>
+    <textarea id="clipOut" hidden readonly aria-label="Text to copy"></textarea>
+  </section>
+</div>
+
+<script>
+'use strict';
+const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const $ = id => document.getElementById(id);
+const fmt = (v, n) => Number.isFinite(+v) ? (+v).toFixed(n) : '–';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, Number.isFinite(+v) ? +v : a));
+
+/* ---------- The Eight-Bar Xylophone (its default design) ---------- */
+const XY = (() => {
+  const E = 68.9e9, rho = 2700, t = 0.006, width = 25, gap = 5, R = 135, head = 10;
+  const c = Math.sqrt(E / rho), K = (4.73 ** 2 / TAU) / Math.sqrt(12), MAJOR = [0, 2, 4, 5, 7, 9, 11, 12], NAMES = ['C6', 'D6', 'E6', 'F6', 'G6', 'A6', 'B6', 'C7'];
+  const lateral = width / 2 - head / 2 - 1;
+  const bars = MAJOR.map((st, i) => {
+    const f = 440 * 2 ** ((84 + st - 69) / 12), L = Math.sqrt(K * c * t / f) * 1000, x = (i - 3.5) * (width + gap);
+    const a = Math.asin(x / R), y = Math.sqrt(R * R - x * x);
+    const tol = Math.min(Math.asin((x + lateral) / R) - a, a - Math.asin((x - lateral) / R)) / DEG;
+    return { i, name: NAMES[i], f, L, x, y, angle: a / DEG, tol };
+  });
+  return { bars, R, width, head };
+})();
+
+/* ---------- Motion laws (adapted from MHSGhali/Linkage-Design and EkaEva/CamForge, MIT) ---------- */
+const LAWS = {
+  cycloidal: { label: 'Cycloidal (smoothest)', f: t => t - Math.sin(TAU * t) / TAU },
+  harmonic:  { label: 'Harmonic (gentler slope)', f: t => (1 - Math.cos(Math.PI * t)) / 2 },
+  parabolic: { label: 'Constant acceleration', f: t => t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) ** 2 },
+};
+const linear = t => t;
+
+/* ---------- Involute gear outline (adapted from MHSGhali/Linkage-Design, MIT) ---------- */
+const inv = a => Math.tan(a) - a;
+function gearOutline({ m, z, pa = 20 * DEG, backlash = 0.05, flank = 6 }) {
+  const rp = m * z / 2, rb = rp * Math.cos(pa), ra = rp + m, rf = Math.max(rp - 1.25 * m, 0.3 * rp);
+  const half = Math.PI / (2 * z) - backlash / (2 * rp);
+  const fa = r => half + inv(pa) - (r > rb ? inv(Math.acos(rb / r)) : 0);
+  const solve = (want, lo, hi) => { for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; fa(mid) > want ? lo = mid : hi = mid; } return (lo + hi) / 2; };
+  const pitchAng = TAU / z; let r0 = Math.max(rb, rf);
+  if (fa(r0) > pitchAng / 2 - 0.02) r0 = solve(pitchAng / 2 - 0.02, r0, rp);
+  let r1 = ra; const land = 0.2 * m * 0.5 / ra; if (fa(ra) < land) r1 = solve(land, rp, ra);
+  const P = (r, a) => [r * Math.cos(a), r * Math.sin(a)], out = [], drop = r0 > rf + 1e-9, a0 = fa(r0), a1 = fa(r1);
+  for (let k = 0; k < z; k++) {
+    const c = pitchAng * k;
+    if (drop) out.push(P(rf, c - a0));
+    for (let i = 0; i < flank; i++) { const r = r0 + (r1 - r0) * i / (flank - 1); out.push(P(r, c - fa(r))); }
+    for (let i = 1; i <= 3; i++) out.push(P(r1, c - a1 + 2 * a1 * i / 4));
+    for (let i = flank - 1; i >= 0; i--) { const r = r0 + (r1 - r0) * i / (flank - 1); out.push(P(r, c + fa(r))); }
+    if (drop) out.push(P(rf, c + a0));
+    for (let i = 1; i <= 4; i++) out.push(P(rf, c + a0 + (pitchAng - 2 * a0) * i / 5));
+  }
+  return { pts: out, rp, ra };
+}
+
+/* ---------- Settings ---------- */
+const EXAMPLE = { tune: "C C G G A A G2 F F E E D D C2", seconds: 12, pz: 16, pm: 0.5, tb: 66, sb: 40, lever: 10, raise: 20, clear: 6, move: 45, rise: 35, tlaw: 'harmonic', slaw: 'cycloidal' };
+const STORE = 'xylophone-player-v1';
+let S; try { S = Object.assign({}, EXAMPLE, JSON.parse(localStorage.getItem(STORE)) || {}); } catch (e) { S = { ...EXAMPLE }; }
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } };
+const SETTLE = 0.08, DROP = 0.10, DWELL = 0.03;      // fractions of a beat: wait, fall, rest on the bar
+
+/* ---------- Tune ---------- */
+function parseTune(text) {
+  const map = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 }, events = [], bad = [];
+  for (const tok of String(text).trim().split(/[\s,]+/).filter(Boolean)) {
+    const m = tok.match(/^([A-Ga-g-])('?)(\d+(?:\.\d+)?)?$/);
+    if (!m) { bad.push(tok); continue; }
+    const beats = m[3] ? clamp(+m[3], 0.5, 8) : 1;
+    if (m[1] === '-') { events.push({ bar: -1, beats }); continue; }
+    let i = map[m[1].toUpperCase()];
+    if (m[2] === "'" || m[1] === 'c') i = 7;
+    events.push({ bar: i, beats });
+  }
+  return { events, bad };
+}
+
+/* ---------- Piecewise cam motion over 0–360° ---------- */
+function piecewise(segs) {
+  const f = deg => {
+    deg = ((deg % 360) + 360) % 360;
+    let lo = 0, hi = segs.length - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (segs[mid].a0 <= deg) lo = mid; else hi = mid - 1; }
+    const s = segs[lo], t = s.a1 > s.a0 ? Math.min(1, Math.max(0, (deg - s.a0) / (s.a1 - s.a0))) : 1;
+    return s.v0 + (s.v1 - s.v0) * s.law(t);
+  };
+  f.segs = segs; return f;
+}
+
+/* ---------- Build both cams from the tune ---------- */
+let P = null;
+function build() {
+  const { events, bad } = parseTune(S.tune);
+  const notes = events.filter(e => e.bar >= 0);
+  if (!notes.length) { P = { error: 'The tune needs at least one note.', bad }; return; }
+  const B = events.reduce((s, e) => s + e.beats, 0), beat = 360 / B;
+  const move = clamp(S.move, 15, 90) / 100, rise = clamp(S.rise, 10, 60) / 100;
+  const n = events.length, starts = []; let acc = 0;
+  for (const e of events) { starts.push(acc); acc += e.beats * beat; }
+  // where he faces during each event: its bar, or for a rest the next note's bar
+  const ang = events.map((e, k) => { for (let j = 0; j < n; j++) { const ev = events[(k + j) % n]; if (ev.bar >= 0) return XY.bars[ev.bar].angle; } return 0; });
+  const tl = (LAWS[S.tlaw] || LAWS.harmonic).f, sl = (LAWS[S.slaw] || LAWS.cycloidal).f;
+  // turn angle (degrees of his body)
+  const turnSegs = []; let pos = 0;
+  events.forEach((e, k) => {
+    const end = starts[k] + e.beats * beat, ms = end - move * beat, next = ang[(k + 1) % n];
+    if (ms > pos) turnSegs.push({ a0: pos, a1: ms, v0: ang[k], v1: ang[k], law: linear });
+    turnSegs.push({ a0: Math.max(pos, ms), a1: end, v0: ang[k], v1: next, law: tl, move: next !== ang[k] });
+    pos = end;
+  });
+  // mallet height above the bars (mm)
+  const H = clamp(S.raise, 5, 60), strikeSegs = [], strikes = []; pos = 0;
+  events.forEach((e, k) => {
+    if (e.bar < 0) return;
+    const st = starts[k] + SETTLE * beat, d1 = st + DROP * beat, d2 = d1 + DWELL * beat, r1 = d2 + rise * beat;
+    if (st > pos) strikeSegs.push({ a0: pos, a1: st, v0: H, v1: H, law: linear });
+    strikeSegs.push({ a0: st, a1: d1, v0: H, v1: 0, law: linear, drop: true });
+    strikeSegs.push({ a0: d1, a1: d2, v0: 0, v1: 0, law: linear });
+    strikeSegs.push({ a0: d2, a1: r1, v0: 0, v1: H, law: sl });
+    strikes.push({ k, bar: e.bar, at: d1 });
+    pos = r1;
+  });
+  if (pos < 360) strikeSegs.push({ a0: pos, a1: 360, v0: H, v1: H, law: linear });
+  const yaw = piecewise(turnSegs), head = piecewise(strikeSegs);
+  // mechanism: rack travel = pinion radius × angle; strike rod lift = lever × head / reach
+  const rp = clamp(S.pm, 0.3, 2) * Math.round(clamp(S.pz, 8, 60)) / 2;
+  const angMin = Math.min(...XY.bars.map(b => b.angle));
+  const lever = clamp(S.lever, 4, 60);
+  const turnLift = deg => rp * (yaw(deg) - angMin) * DEG;
+  const strikeLift = deg => lever * head(deg) / XY.R;
+  // forward model, used for every check and for the animation
+  const yawFromRack = lift => angMin + lift / rp / DEG;
+  const headFromRod = lift => lift * XY.R / lever;
+  const inDrop = deg => strikeSegs.some(s => s.drop && deg >= s.a0 - 0.5 && deg <= s.a1 + 0.5);
+  const turnCam = buildCam(clamp(S.tb, 20, 150), turnLift, 4, 0, () => false);
+  const strikeCam = buildCam(clamp(S.sb, 15, 120), strikeLift, 2, Math.PI / 2, inDrop);
+  P = { events, notes, bad, B, beat, starts, yaw, head, turnLift, strikeLift, yawFromRack, headFromRod, rp, angMin, lever, H, strikes, turnSegs, strikeSegs, turnCam, strikeCam, inDrop };
+  check();
+}
+
+/* Cam from a lift function. followerAt = direction of the follower (radians), so the follower
+   sees lift(θ) when the cam has turned by θ. Rising and falling slopes are checked separately;
+   the snail's drop is skipped, because there the follower falls off the lip on purpose. */
+function buildCam(base, liftFn, rollerR, followerAt, skip) {
+  const pitch = psi => base + liftFn((psi - followerAt) / DEG);
+  const n = 1440, h = 1e-4, surface = [], skipMask = [];
+  let maxRise = 0, maxFall = 0, maxLift = 0;
+  for (let i = 0; i < n; i++) {
+    const p = TAU * i / n, r = pitch(p), dr = (pitch(p + h) - pitch(p - h)) / (2 * h);
+    const c = Math.cos(p), s = Math.sin(p), tx = dr * c - r * s, ty = dr * s + r * c, tl = Math.hypot(tx, ty);
+    surface.push([r * c - ty / tl * rollerR, r * s + tx / tl * rollerR]);
+    const deg = ((((p - followerAt) / DEG) % 360) + 360) % 360, sk = skip(deg); skipMask.push(sk);
+    maxLift = Math.max(maxLift, r - base);
+    if (!sk) { const pa = Math.atan(Math.abs(dr) / r) / DEG; if (dr > 0) maxRise = Math.max(maxRise, pa); else maxFall = Math.max(maxFall, pa); }
+  }
+  let undercut = base - rollerR < 4;
+  for (let i = 0; i < n && !undercut; i++) {
+    if (skipMask[i] || skipMask[(i + 1) % n] || skipMask[(i + 2) % n]) continue;
+    const A = surface[i], B2 = surface[(i + 1) % n], D = surface[(i + 2) % n];
+    const e0 = [B2[0] - A[0], B2[1] - A[1]], e1 = [D[0] - B2[0], D[1] - B2[1]], l0 = Math.hypot(...e0), l1 = Math.hypot(...e1);
+    if (l0 > 1e-9 && l1 > 1e-9 && (e0[0] * e1[0] + e0[1] * e1[1]) / (l0 * l1) < 0) undercut = true;
+  }
+  return { base, surface, maxRise, maxFall, maxLift, outerR: Math.max(...surface.map(q => Math.hypot(...q))), undercut, rollerR, followerAt };
+}
+
+/* ---------- Checks: sample the mechanism, find the hits, compare with the tune ---------- */
+let C = null;
+function check() {
+  const N = 7200, step = 360 / N, hits = [];
+  let minClear = Infinity, maxDrift = 0, prevHead = P.headFromRod(P.strikeLift(-step)), roundTrip = 0, armed = prevHead > 0.5;
+  let prevYaw = P.yawFromRack(P.turnLift(-step));
+  for (let i = 0; i < N; i++) {
+    const deg = i * step, yaw = P.yawFromRack(P.turnLift(deg)), head = P.headFromRod(P.strikeLift(deg));
+    roundTrip = Math.max(roundTrip, Math.abs(yaw - P.yaw(deg)), Math.abs(head - P.head(deg)));
+    if (Math.abs(yaw - prevYaw) > 1e-9) minClear = Math.min(minClear, head, prevHead);   // he is turning
+    if (head > 0.5) armed = true;
+    if (armed && head <= 0.05) {                                                         // the mallet has landed
+      armed = false;
+      let best = null; for (const b of XY.bars) { const d = Math.abs(yaw - b.angle); if (!best || d < best.d) best = { b, d }; }
+      // how much he turns while the mallet is down on the bar
+      let drift = 0; for (let j = 0; j < Math.round(DWELL * P.beat / step); j++) drift = Math.max(drift, Math.abs(P.yawFromRack(P.turnLift(deg + j * step)) - yaw));
+      maxDrift = Math.max(maxDrift, drift);
+      hits.push({ at: deg, yaw, bar: best.d <= best.b.tol ? best.b : null, off: best.d, nearest: best.b });
+    }
+    prevHead = head; prevYaw = yaw;
+  }
+  const want = P.notes.map(e => XY.bars[e.bar].name), got = hits.map(h => h.bar ? h.bar.name : '✕');
+  const match = want.length === got.length && want.every((w, i) => w === got[i]);
+  const maxOff = Math.max(0, ...hits.map(h => h.off));
+  C = { hits, want, got, match, minClear, maxDrift, maxOff, roundTrip };
+}
+
+/* ---------- Theme colours ---------- */
+let COL = {};
+function readColors() { const cs = getComputedStyle(document.documentElement); for (const k of ['paper', 'panel', 'ink', 'muted', 'line', 'grid', 'brass', 'brass-soft', 'steel', 'steel-soft', 'warn', 'warn-soft', 'ok', 'ok-soft', 'bar', 'bar-edge']) COL[k] = cs.getPropertyValue('--' + k).trim(); }
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); drawAll(); });
+new MutationObserver(() => { readColors(); drawAll(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ---------- Canvas helper (mm, y up) ---------- */
+function view(canvas) {
+  const ctx = canvas.getContext('2d'), v = { ctx };
+  v.fit = (x0, x1, y0, y1) => {
+    const dpr = window.devicePixelRatio || 1, W = canvas.clientWidth || 300, H = canvas.clientHeight || 300;
+    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const pad = 10; v.S = Math.min((W - 2 * pad) / (x1 - x0), (H - 2 * pad) / (y1 - y0));
+    v.ox = (W - (x1 - x0) * v.S) / 2 - x0 * v.S; v.oy = H - ((H - (y1 - y0) * v.S) / 2 - y0 * v.S); v.W = W; v.H = H;
+  };
+  v.X = x => v.ox + x * v.S; v.Y = y => v.oy - y * v.S;
+  v.line = (a, b, c, d) => { ctx.beginPath(); ctx.moveTo(v.X(a), v.Y(b)); ctx.lineTo(v.X(c), v.Y(d)); ctx.stroke(); };
+  v.circle = (x, y, r) => { ctx.beginPath(); ctx.arc(v.X(x), v.Y(y), Math.max(0.5, r * v.S), 0, TAU); };
+  v.rect = (x0, y0, x1, y1) => { ctx.beginPath(); ctx.rect(v.X(x0), v.Y(y1), (x1 - x0) * v.S, (y1 - y0) * v.S); };
+  v.poly = (pts, cx, cy, rot) => { const c = Math.cos(rot), s = Math.sin(rot); ctx.beginPath(); pts.forEach(([x, y], i) => { const wx = cx + x * c - y * s, wy = cy + x * s + y * c; i ? ctx.lineTo(v.X(wx), v.Y(wy)) : ctx.moveTo(v.X(wx), v.Y(wy)); }); ctx.closePath(); };
+  v.text = (t, x, y, o = {}) => { ctx.font = o.font || '500 11px "IBM Plex Mono", ui-monospace, monospace'; ctx.fillStyle = o.color || COL.muted; ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, v.X(x), v.Y(y)); };
+  return v;
+}
+const TV = view($('top')), CV = view($('cams'));
+
+let theta = 0, flashBar = -1, flashUntil = 0;
+function drawTop() {
+  const v = TV, ctx = v.ctx, R = XY.R, bars = XY.bars;
+  const Lmax = Math.max(...bars.map(b => b.L));
+  v.fit(-R - 12, R + 12, -18, Math.max(...bars.map(b => b.y)) + Lmax / 2 + 12);
+  ctx.strokeStyle = COL.brass; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(v.X(0), v.Y(0), R * v.S, Math.PI, TAU); ctx.stroke(); ctx.setLineDash([]);
+  const now = performance.now();
+  for (const b of bars) {
+    v.rect(b.x - XY.width / 2, b.y - b.L / 2, b.x + XY.width / 2, b.y + b.L / 2);
+    ctx.fillStyle = (b.i === flashBar && now < flashUntil) ? COL.brass : COL.bar; ctx.fill(); ctx.strokeStyle = COL['bar-edge']; ctx.lineWidth = 1; ctx.stroke();
+    v.text(b.name, b.x, b.y + b.L / 2 + 6, { color: COL.ink, font: '600 11px "IBM Plex Sans", system-ui, sans-serif' });
+  }
+  const yaw = P.yawFromRack(P.turnLift(theta)), head = P.headFromRod(P.strikeLift(theta)), a = yaw * DEG;
+  const hx = R * Math.sin(a), hy = R * Math.cos(a);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = Math.max(3, 4 * v.S); ctx.lineCap = 'round'; v.line(0, 0, hx, hy); ctx.lineCap = 'butt';
+  // the head's shadow on the bars, and the head itself (bigger = higher)
+  v.circle(hx, hy, XY.head / 2); ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fill();
+  v.circle(hx + head * 0.15, hy + head * 0.25, XY.head / 2 * (1 + head / 60)); ctx.fillStyle = head < 0.3 ? COL.warn : COL.brass; ctx.fill(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1; ctx.stroke();
+  v.circle(0, 0, 6); ctx.fillStyle = COL.ink; ctx.fill();
+  v.text('turning axis', 0, -12);
+}
+function drawCams() {
+  const v = CV, ctx = v.ctx, T = P.turnCam, St = P.strikeCam;
+  const gapX = T.outerR + St.outerR + 95, sx = gapX;
+  v.fit(-T.outerR - 8, sx + St.outerR + 10, -Math.max(T.outerR, St.outerR) - 8, Math.max(T.outerR, St.outerR + 60) + 6);
+  const th = theta * DEG;
+  // shaft line
+  ctx.strokeStyle = COL.muted; ctx.setLineDash([5, 4]); ctx.lineWidth = 1; v.line(0, 0, sx, 0); ctx.setLineDash([]);
+  for (const [cam, cx, col] of [[T, 0, COL.steel], [St, sx, COL.brass]]) {
+    v.poly(cam.surface, cx, 0, -th); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = cam.undercut ? COL.warn : col; ctx.lineWidth = 1.6; ctx.stroke();
+    const mk = [Math.cos(cam.followerAt - th), Math.sin(cam.followerAt - th)];
+    ctx.strokeStyle = COL.muted; ctx.lineWidth = 1; v.line(cx + mk[0] * 4, mk[1] * 4, cx + mk[0] * (cam.base - cam.rollerR - 4), mk[1] * (cam.base - cam.rollerR - 4));
+    v.circle(cx, 0, 3); ctx.fillStyle = COL.ink; ctx.fill();
+  }
+  // turn follower: horizontal rod with a rack, to the right of the turn cam
+  const tl = P.turnLift(theta), rx = T.base + tl;
+  v.circle(rx, 0, T.rollerR); ctx.fillStyle = COL.panel; ctx.fill(); ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.5; v.line(rx + T.rollerR, 0, rx + 46, 0);
+  ctx.lineWidth = 1; for (let k = 0; k < 9; k++) { const x = rx + 14 + k * 3.5; v.line(x, 1.2, x, 4); }
+  v.text('rack → pinion', rx + 28, 12, { color: COL.steel });
+  v.text(`travel ${fmt(tl, 2)} mm`, rx + 30, -10, { color: COL.steel });
+  // strike follower: vertical rod up the hollow shaft
+  const sl = P.strikeLift(theta), sy = St.base + sl;
+  v.circle(sx, sy, St.rollerR); ctx.fillStyle = COL.panel; ctx.fill(); ctx.strokeStyle = COL.brass; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.5; v.line(sx, sy + St.rollerR, sx, St.outerR + 50);
+  v.text('rod → mallet lever', sx, St.outerR + 56, { color: COL.brass });
+  v.text(`lift ${fmt(sl, 2)} mm`, sx + 6, St.outerR + 20, { color: COL.brass, align: 'left' });
+  v.text('Turn cam', 0, -T.outerR - 2, { color: COL.steel, font: '600 12px "IBM Plex Sans", system-ui, sans-serif' });
+  v.text('Strike cam (snail)', sx, -St.outerR - 2, { color: COL.brass, font: '600 12px "IBM Plex Sans", system-ui, sans-serif' });
+}
+function drawChart(id, fn, opts) {
+  const cv = $(id), w = cv.clientWidth, h = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const padL = 46, padR = 8, padT = 16, padB = 18, [lo, hi] = opts.range;
+  const px = d => padL + (w - padL - padR) * d / 360, py = val => h - padB - (h - padT - padB) * (val - lo) / (hi - lo);
+  g.font = '500 10px "IBM Plex Mono", monospace';
+  // shaded turning moves
+  g.fillStyle = COL['steel-soft'];
+  for (const s of P.turnSegs) if (s.move) g.fillRect(px(s.a0), padT, px(s.a1) - px(s.a0), h - padT - padB);
+  g.strokeStyle = COL.line; g.lineWidth = 1; g.fillStyle = COL.muted;
+  for (let q = 0; q <= 4; q++) { const x = px(q * 90); g.beginPath(); g.moveTo(x, padT); g.lineTo(x, h - padB); g.stroke(); g.textAlign = q === 0 ? 'left' : q === 4 ? 'right' : 'center'; g.fillText(q * 90 + '°', x, h - 4); }
+  for (const r of opts.refs) { g.strokeStyle = r.color || COL.line; g.setLineDash(r.dash || []); g.beginPath(); g.moveTo(padL, py(r.v)); g.lineTo(w - padR, py(r.v)); g.stroke(); g.setLineDash([]); if (r.label) { g.fillStyle = COL.muted; g.textAlign = 'right'; g.fillText(r.label, padL - 4, py(r.v) + 3); } }
+  g.beginPath(); for (let k = 0; k <= 1440; k++) { const d = k / 4, y = py(fn(d)); k ? g.lineTo(px(d), y) : g.moveTo(px(d), y); }
+  g.strokeStyle = opts.color; g.lineWidth = 2; g.stroke();
+  for (const hit of C.hits) { g.fillStyle = hit.bar ? COL.ok : COL.warn; g.beginPath(); g.arc(px(hit.at), py(fn(hit.at)), 3, 0, TAU); g.fill(); }
+  const t = ((theta % 360) + 360) % 360; g.strokeStyle = COL.ink; g.lineWidth = 1; g.beginPath(); g.moveTo(px(t), padT); g.lineTo(px(t), h - padB); g.stroke();
+  g.fillStyle = COL.ink; g.textAlign = 'left'; g.font = '600 11px "IBM Plex Sans", system-ui, sans-serif'; g.fillText(opts.title, padL, 11);
+}
+function drawCharts() {
+  drawChart('chartTurn', d => P.yawFromRack(P.turnLift(d)), { range: [-60, 60], color: COL.steel, title: 'Where he faces (°), from the turn cam. Dots = hits. Shaded = turning.', refs: XY.bars.map(b => ({ v: b.angle, label: b.name, dash: [2, 3] })) });
+  drawChart('chartStrike', d => P.headFromRod(P.strikeLift(d)), { range: [-2, P.H + 4], color: COL.brass, title: 'Mallet height above the bars (mm), from the strike cam', refs: [{ v: 0, label: 'bar' }, { v: clamp(S.clear, 1, 40), label: 'clear', color: COL.warn, dash: [4, 3] }] });
+}
+
+/* ---------- Readouts, heard notes, proof, parts ---------- */
+function renderHeard() {
+  const t = ((theta % 360) + 360) % 360; let cur = -1; C.hits.forEach((h, i) => { if (h.at <= t) cur = i; });
+  $('heard').innerHTML = C.hits.map((h, i) => `<span class="${h.bar ? '' : 'miss'} ${i === cur ? 'now' : ''}" title="landed ${fmt(h.off, 2)}° from the bar centre">${h.bar ? h.bar.name : '✕ miss'}</span>`).join('') || '<span class="miss">No hits</span>';
+}
+function renderChecks() {
+  const items = [], ok = b => `<span class="chip ${b ? '' : 'warn'}">${b ? 'Pass' : 'Check'}</span>`;
+  const T = P.turnCam, St = P.strikeCam, clear = clamp(S.clear, 1, 40);
+  items.push([C.match, 'The mechanism plays the tune', `Found <b>${C.hits.length}</b> hits by watching the mallet land; the tune has <b>${C.want.length}</b> notes. Heard: <b>${C.got.join(' ')}</b>.`]);
+  items.push([C.maxOff < Math.min(...XY.bars.map(b => b.tol)), 'Every hit lands on its bar', `Furthest any hit lands from a bar’s centre line: <b>${fmt(C.maxOff, 3)}°</b>. Allowed: ±${fmt(Math.min(...XY.bars.map(b => b.tol)), 1)}° before the mallet head reaches the bar’s edge.`]);
+  items.push([C.maxDrift < 0.01, 'He is still when the mallet lands', `Most he turns while the mallet is on the bar: <b>${fmt(C.maxDrift, 4)}°</b>.`]);
+  items.push([C.minClear >= clear, 'The mallet is up whenever he turns', `Lowest the mallet gets while he is turning: <b>${fmt(C.minClear, 1)} mm</b> above the bars (need ${clear} mm). If this fails, give the mallet more time to rise or start the turn later.`]);
+  const rpOk = T.maxRise <= 30 && St.maxRise <= 30, fallOk = T.maxFall <= 45 && St.maxFall <= 45;
+  items.push([rpOk && fallOk, 'Both cams can push their followers', `Steepest climb: turn cam <b>${fmt(T.maxRise, 0)}°</b>, strike cam <b>${fmt(St.maxRise, 0)}°</b> (keep under 30°). Steepest descent, where the return spring does the work: <b>${fmt(T.maxFall, 0)}°</b> and <b>${fmt(St.maxFall, 0)}°</b> (under 45°). The snail’s drop is left out on purpose: the follower falls off the lip there.`]);
+  items.push([!T.undercut && !St.undercut, 'Both cams can be cut', `No undercut: the ${fmt(2 * T.rollerR, 0)} mm and ${fmt(2 * St.rollerR, 0)} mm rollers reach every part of each profile${St.undercut || T.undercut ? '. Use bigger cams, gentler moves or smaller rollers.' : '.'}`]);
+  const tolMm = Math.min(...XY.bars.map(b => b.tol)) * DEG * P.rp;
+  items.push([tolMm >= 0.1, 'Accuracy the turn cam needs', `±${fmt(Math.min(...XY.bars.map(b => b.tol)), 1)}° at the bars = <b>±${fmt(tolMm, 2)} mm</b> of rack travel. Rack and pinion backlash plus cam cutting error must stay inside that. A bigger pinion relaxes this, but the turn cam then has to grow.`]);
+  items.push([C.roundTrip < 1e-9, 'Cam and mechanism agree', `Each position was converted to cam lift and back through the rack and lever. Largest mismatch: <b>${C.roundTrip.toExponential(1)}</b>.`]);
+  $('checks').innerHTML = items.map(([a, b, c]) => `<li>${ok(a)}<span class="what">${b}</span><span class="how">${c}</span></li>`).join('');
+}
+function partRows() {
+  const T = P.turnCam, St = P.strikeCam, pin = gearOutline({ m: +S.pm, z: Math.round(S.pz) });
+  return [
+    ['Turn cam', `base Ø ${fmt(2 * T.base, 1)}, outside Ø ${fmt(2 * T.outerR, 1)}, travel ${fmt(T.maxLift, 2)}`, `${fmt(2 * T.rollerR, 0)} mm roller, rack follower`],
+    ['Strike cam (snail)', `base Ø ${fmt(2 * St.base, 1)}, outside Ø ${fmt(2 * St.outerR, 1)}, lift ${fmt(St.maxLift, 2)}`, `${fmt(2 * St.rollerR, 0)} mm roller, rod up the hollow shaft`],
+    ['Pinion on his waist', `${Math.round(S.pz)} teeth, module ${S.pm}, pitch Ø ${fmt(2 * pin.rp, 1)}`, `turns ${fmt(1 / (P.rp * DEG), 2)}° per mm of rack`],
+    ['Rack', `module ${S.pm}, at least ${fmt(T.maxLift + 6, 1)} long`, 'on the end of the turn follower rod'],
+    ['Mallet lever', `${fmt(P.lever, 1)} from pivot to rod`, `lifts the ${XY.R} mm arm ${fmt(XY.R / P.lever, 1)}× the rod’s travel`],
+    ['Shaft', `${P.B} beats per turn = ${fmt(P.beat, 2)}° of cam per beat`, `${fmt(P.B / clamp(S.seconds, 4, 30) * 60, 0)} beats per minute at ${S.seconds} s per tune`],
+  ];
+}
+function renderParts() { $('parts').innerHTML = `<thead><tr><th>Part</th><th>Size (mm)</th><th>Notes</th></tr></thead><tbody>${partRows().map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody>`; }
+function buildSVG() {
+  const f = v => (Math.round(v * 1000) / 1000).toString(), T = P.turnCam, St = P.strikeCam, pin = gearOutline({ m: +S.pm, z: Math.round(S.pz) });
+  const gap = 8, items = [{ pts: T.surface, r: T.outerR, mark: T.base - T.rollerR - 3, at: T.followerAt, label: 'Turn cam' }, { pts: St.surface, r: St.outerR, mark: St.base - St.rollerR - 3, at: St.followerAt, label: 'Strike cam' }, { pts: pin.pts, r: pin.ra, label: `Pinion ${Math.round(S.pz)}T m${S.pm}`, bore: 1.5 }];
+  const H = Math.max(...items.map(p => 2 * p.r)) + 2 * gap + 8, mid = gap + Math.max(...items.map(p => p.r)); let x = gap; const cut = [], eng = [];
+  for (const p of items) {
+    const cx = x + p.r, cy = mid, bore = p.bore || 2;
+    cut.push(`<path d="M ${p.pts.map(([a, b]) => `${f(cx + a)} ${f(cy - b)}`).join(' L ')} Z"/>`, `<circle cx="${f(cx)}" cy="${f(cy)}" r="${bore}"/>`);
+    if (p.mark) eng.push(`<path d="M ${f(cx + Math.cos(p.at) * (bore + 1.5))} ${f(cy - Math.sin(p.at) * (bore + 1.5))} L ${f(cx + Math.cos(p.at) * p.mark)} ${f(cy - Math.sin(p.at) * p.mark)}"/>`);
+    eng.push(`<text x="${f(cx)}" y="${f(H - 3)}" font-size="4" text-anchor="middle" font-family="sans-serif" stroke="none" fill="#0000ff">${esc(p.label)}</text>`);
+    x += 2 * p.r + gap;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(x)}mm" height="${f(H)}mm" viewBox="0 0 ${f(x)} ${f(H)}">
+  <!-- Xylophone player cams. Tune: ${esc(S.tune)}. Units mm. Engraved line = start of the tune; on the turn cam it points at the rack follower, on the strike cam at the push rod. -->
+  <g id="CUT" fill="none" stroke="#ff0000" stroke-width="0.1">
+    ${cut.join('\n    ')}
+  </g>
+  <g id="ENGRAVE" fill="none" stroke="#0000ff" stroke-width="0.1">
+    ${eng.join('\n    ')}
+  </g>
+</svg>`;
+}
+
+/* ---------- Sound: the bar under the mallet when it lands ---------- */
+let AC = null, soundOn = false;
+function ring(f) {
+  if (!soundOn) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const now = AC.currentTime, out = AC.createGain(); out.gain.value = 0.22; out.connect(AC.destination);
+    [1, 2.7565, 5.4039].forEach((r, k) => {
+      const o = AC.createOscillator(), g = AC.createGain(), d = 2.2 / (1 + 1.6 * k);
+      o.frequency.value = f * r; g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime([1, 0.32, 0.12][k], now + 0.003); g.gain.exponentialRampToValueAtTime(0.0005, now + d);
+      o.connect(g); g.connect(out); o.start(now); o.stop(now + d + 0.05);
+    });
+  } catch (e) { /* audio unavailable */ }
+}
+
+/* ---------- Loop and controls ---------- */
+function drawAll() {
+  if (!P || P.error) return;
+  drawTop(); drawCams(); drawCharts(); renderHeard();
+  const t = ((theta % 360) + 360) % 360;
+  $('angleOut').textContent = fmt(t, 1) + '°';
+  if (document.activeElement !== $('scrub')) $('scrub').value = t.toFixed(1);
+  $('yawOut').textContent = fmt(P.yawFromRack(P.turnLift(t)), 1) + '°';
+  $('headOut').textContent = fmt(P.headFromRod(P.strikeLift(t)), 1) + ' mm';
+}
+let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches, last = null;
+function advance(dDeg) {
+  const from = theta, to = theta + dDeg;
+  for (const h of C.hits) {                       // play every hit the mechanism makes in this step
+    for (const base of [Math.floor(from / 360) * 360, Math.floor(to / 360) * 360]) {
+      const at = base + h.at;
+      if (at > from && at <= to) { if (h.bar) { ring(h.bar.f); flashBar = h.bar.i; flashUntil = performance.now() + 160; } }
+    }
+  }
+  theta = to;
+}
+function tick(ts) {
+  if (playing && last !== null && P && !P.error) advance(360 * (ts - last) / 1000 / clamp(S.seconds, 4, 30));
+  last = ts; if (playing) drawAll(); requestAnimationFrame(tick);
+}
+const setPlay = p => { playing = p; $('play').textContent = playing ? 'Pause' : 'Play'; };
+$('play').onclick = () => setPlay(!playing);
+$('sound').onclick = () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', soundOn); $('sound').textContent = soundOn ? 'Sound on' : 'Sound off'; if (soundOn) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) { /* none */ } } };
+$('scrub').oninput = e => { setPlay(false); theta = +e.target.value; drawAll(); };
+$('speed').oninput = e => { S.seconds = +e.target.value; $('speedOut').textContent = S.seconds + ' s'; save(); renderParts(); };
+const NUMS = ['pz', 'pm', 'tb', 'sb', 'lever', 'raise', 'clear', 'move', 'rise'];
+$('tlaw').innerHTML = $('slaw').innerHTML = Object.entries(LAWS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+function bind() {
+  $('tune').value = S.tune; $('tlaw').value = S.tlaw; $('slaw').value = S.slaw; NUMS.forEach(k => $(k).value = S[k]);
+  $('speed').value = S.seconds; $('speedOut').textContent = S.seconds + ' s';
+  $('tune').oninput = e => { S.tune = e.target.value; update(); };
+  $('tlaw').onchange = e => { S.tlaw = e.target.value; update(); };
+  $('slaw').onchange = e => { S.slaw = e.target.value; update(); };
+  NUMS.forEach(k => $(k).oninput = e => { const v = +e.target.value; if (Number.isFinite(v) && v > 0) { S[k] = v; update(); } });
+}
+function update() {
+  build(); save();
+  if (P.error) { $('checks').innerHTML = `<li><span class="chip warn">Check</span><span class="what">${esc(P.error)}</span></li>`; return; }
+  if (P.bad.length) flash(`Skipped: ${P.bad.join(' ')}. Use C D E F G A B C', with a number for longer notes.`);
+  renderChecks(); renderParts(); drawAll();
+}
+function flash(m) { $('status').textContent = m; clearTimeout(flash.t); flash.t = setTimeout(() => $('status').textContent = '', 5000); }
+function copyText(t, okMsg) {
+  const fb = () => { const ta = $('clipOut'); ta.hidden = false; ta.value = t; ta.focus(); ta.select(); flash('Copying wasn’t allowed here. The text is selected below: press Ctrl+C or Cmd+C.'); };
+  try { navigator.clipboard.writeText(t).then(() => flash(okMsg), fb); } catch (e) { fb(); }
+}
+let framed = true; try { framed = window.self !== window.top; } catch (e) { framed = true; }
+$('dlSvg').hidden = framed;
+$('copySvg').onclick = () => copyText(buildSVG(), 'SVG copied. Paste it into a file named xylophone-player-cams.svg.');
+$('copySpec').onclick = () => copyText(partRows().map(r => r.join(': ')).join('\n'), 'Part sizes copied.');
+$('dlSvg').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buildSVG()], { type: 'image/svg+xml' })); a.download = 'xylophone-player-cams.svg'; a.click(); };
+$('reset').onclick = () => { S = { ...EXAMPLE }; bind(); update(); flash('Back to “Twinkle”.'); };
+window.addEventListener('resize', drawAll);
+bind(); update(); setPlay(playing); requestAnimationFrame(tick);
+</script>
+
+</body>
+</html>

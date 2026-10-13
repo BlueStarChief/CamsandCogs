@@ -3,6 +3,7 @@
 # Edit the fragments only; rerun this after every change.
 #   automaton-designer.html -> index.html
 #   xylophone.html          -> xylophone-local.html
+#   xylophone-player.html   -> xylophone-player-local.html
 cd "$(dirname "$0")"
 wrap() {
   {
@@ -15,3 +16,4 @@ wrap() {
 }
 wrap automaton-designer.html index.html
 wrap xylophone.html xylophone-local.html
+wrap xylophone-player.html xylophone-player-local.html

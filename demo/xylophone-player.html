@@ -40,7 +40,12 @@ h2 { font:600 .78rem/1.2 var(--sans); text-transform:uppercase; letter-spacing:.
 .views { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:20px; }
 @media (max-width:900px) { .views { grid-template-columns:minmax(0,1fr); } }
 canvas { display:block; width:100%; }
-#top { height:380px; } #cams { height:380px; } .chart { height:150px; }
+#top { height:380px; } #cams { height:380px; } .chart { height:150px; } #drive, #detail { height:420px; }
+.drive-views { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; }
+@media (max-width:760px) { .drive-views { grid-template-columns:minmax(0,1fr); } }
+.caption { font:600 .7rem/1 var(--sans); text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin-bottom:6px; }
+.sum { font:500 .95rem var(--mono); font-variant-numeric:tabular-nums; background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:10px 12px; line-height:1.7; }
+.sum b { color:var(--brass); font-weight:500; }
 .transport { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; }
 .readout { font:500 .88rem var(--mono); font-variant-numeric:tabular-nums; color:var(--muted); }
 .readout b { color:var(--ink); font-weight:500; }
@@ -96,6 +101,18 @@ textarea { width:100%; height:110px; font:.75rem var(--mono); color:var(--ink); 
       <canvas id="cams" aria-label="Turn cam with its rack follower, and strike cam with its drop and push rod"></canvas>
     </section>
   </div>
+
+  <section class="panel" aria-labelledby="driveHead">
+    <div class="panel-head"><h2 id="driveHead">How the turn cam turns him</h2>
+      <label class="inline" for="driveType">Drive <select id="driveType" style="width:auto"><option value="rack">Rack and pinion</option><option value="cord">Cord and drum (1800s style)</option></select></label>
+    </div>
+    <div class="drive-views">
+      <div><div class="caption">Inside the box, looking down</div><canvas id="drive" aria-label="Top view inside the box: turn cam edge-on, follower rod, guides, return spring, and the rack or cord meeting his waist shaft"></canvas></div>
+      <div><div class="caption">Close-up of the mesh, looking down his waist shaft</div><canvas id="detail" aria-label="Close-up: rack teeth rolling the pinion, or the cord unwinding from the drum, with a dial of the bar angles"></canvas></div>
+    </div>
+    <div class="sum" id="sum"></div>
+    <p class="note" id="driveNote"></p>
+  </section>
 
   <section class="panel" aria-label="Playback">
     <div class="transport">
@@ -203,7 +220,7 @@ function gearOutline({ m, z, pa = 20 * DEG, backlash = 0.05, flank = 6 }) {
 }
 
 /* ---------- Settings ---------- */
-const EXAMPLE = { tune: "C C G G A A G2 F F E E D D C2", seconds: 12, pz: 16, pm: 0.5, tb: 66, sb: 40, lever: 10, raise: 20, clear: 6, move: 45, rise: 35, tlaw: 'harmonic', slaw: 'cycloidal' };
+const EXAMPLE = { tune: "C C G G A A G2 F F E E D D C2", seconds: 12, pz: 16, pm: 0.5, tb: 66, sb: 40, lever: 10, raise: 20, clear: 6, move: 45, rise: 35, tlaw: 'harmonic', slaw: 'cycloidal', drive: 'rack' };
 const STORE = 'xylophone-player-v1';
 let S; try { S = Object.assign({}, EXAMPLE, JSON.parse(localStorage.getItem(STORE)) || {}); } catch (e) { S = { ...EXAMPLE }; }
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* storage unavailable */ } };
@@ -416,6 +433,120 @@ function drawCams() {
   v.text('Turn cam', 0, -T.outerR - 2, { color: COL.steel, font: '600 12px "IBM Plex Sans", system-ui, sans-serif' });
   v.text('Strike cam (snail)', sx, -St.outerR - 2, { color: COL.brass, font: '600 12px "IBM Plex Sans", system-ui, sans-serif' });
 }
+const DV = view($('drive')), DT = view($('detail'));
+function zigzag(v, x, y0, y1, w, n) {
+  const ctx = v.ctx; ctx.beginPath(); ctx.moveTo(v.X(x), v.Y(y0));
+  for (let i = 1; i < n; i++) ctx.lineTo(v.X(x + (i % 2 ? w : -w)), v.Y(y0 + (y1 - y0) * i / n));
+  ctx.lineTo(v.X(x), v.Y(y1)); ctx.stroke();
+}
+/* Top view inside the box. The main shaft runs left–right; the turn cam is a disc standing on
+   it, so from above it is seen edge-on. Its follower presses on the cam's edge and slides
+   away from the shaft (up the page). His waist shaft comes down vertically through the lid. */
+function driveGeom() {
+  const T = P.turnCam, travelMax = P.rp * (Math.max(...XY.bars.map(b => b.angle)) - P.angMin) * DEG;
+  const lift = P.turnLift(theta), rollerY = T.base + lift, yP = T.base + 30 + travelMax + 6;
+  return { T, travelMax, lift, rollerY, yP, rackLen: travelMax + 14, yaw: P.yawFromRack(lift) };
+}
+function drawDrive() {
+  const v = DV, ctx = v.ctx, g = driveGeom(), T = g.T, cord = S.drive === 'cord', rp = P.rp;
+  v.fit(-46, 46, T.base - 22, g.yP + 44);
+  // main shaft and the cam, edge-on
+  ctx.strokeStyle = COL.muted; ctx.setLineDash([5, 4]); ctx.lineWidth = 1; v.line(-44, 0, 44, 0); ctx.setLineDash([]);
+  v.text('main shaft is below ↓', 26, T.base - 16);
+  v.rect(-3, -T.outerR, 3, T.outerR); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.4; ctx.stroke();
+  v.text('turn cam rim (edge-on)', -24, T.base - 8, { align: 'center' });
+  // roller and rod
+  v.rect(-2.5, g.rollerY - T.rollerR, 2.5, g.rollerY + T.rollerR); ctx.fillStyle = COL.panel; ctx.fill(); ctx.strokeStyle = COL.ink; ctx.lineWidth = 1; ctx.stroke();
+  const rodTop = g.rollerY + 30 + g.rackLen + (cord ? 10 : 0);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = Math.max(2, 1.6 * v.S); v.line(0, g.rollerY + T.rollerR, 0, cord ? rodTop : g.rollerY + 30);
+  // guides (fixed to the box)
+  ctx.fillStyle = COL.line;
+  for (const gy of [T.base + 26, g.yP + 30]) { v.rect(-6, gy - 2, -1.6, gy + 2); ctx.fill(); v.rect(1.6, gy - 2, 6, gy + 2); ctx.fill(); }
+  // return spring: compressed between a collar on the rod and the first guide
+  const collar = g.rollerY + 12;
+  v.rect(-4, collar - 1, 4, collar + 1); ctx.fillStyle = COL.ink; ctx.fill();
+  ctx.strokeStyle = COL.ok; ctx.lineWidth = 1.2; zigzag(v, 0, collar + 1, T.base + 24, 4, 12);
+  v.text('return spring', -16, (collar + T.base + 24) / 2, { color: COL.ok, align: 'right' });
+  if (!cord) {
+    // rack: the toothed end of the rod, its pitch line one pitch radius from the waist shaft
+    const r0 = g.rollerY + 30, r1 = r0 + g.rackLen;
+    v.rect(-2.2, r0, 0, r1); ctx.fillStyle = COL['steel-soft']; ctx.fill(); ctx.strokeStyle = COL.steel; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = COL.steel; for (let y = r0 + 1; y < r1; y += Math.PI * +S.pm) v.line(0, y, 0.6, y);
+    v.text('rack', -12, (r0 + r1) / 2, { color: COL.steel, align: 'right' });
+    const pin = gearOutline({ m: +S.pm, z: Math.round(S.pz) });
+    v.poly(pin.pts, rp, g.yP, Math.PI - (g.yaw - P.angMin) * DEG); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = COL.brass; ctx.lineWidth = 1; ctx.stroke();
+  } else {
+    // cord from an arm on the rod's end, down the side of the drum, wrapped round it
+    ctx.strokeStyle = COL.brass; ctx.lineWidth = 1.2; v.line(0, rodTop, 0, g.yP);
+    v.circle(rp, g.yP, rp); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = COL.brass; ctx.lineWidth = 1; ctx.stroke();
+    v.text('cord', -10, (rodTop + g.yP) / 2, { color: COL.brass, align: 'right' });
+  }
+  v.circle(rp, g.yP, Math.max(1, rp * 0.25)); ctx.fillStyle = COL.ink; ctx.fill();
+  // which way he faces (yaw + = to his right = clockwise from above)
+  const a = (90 - g.yaw) * DEG;
+  ctx.strokeStyle = COL.warn; ctx.lineWidth = 2; v.line(rp, g.yP, rp + 26 * Math.cos(a), g.yP + 26 * Math.sin(a));
+  v.circle(rp + 26 * Math.cos(a), g.yP + 26 * Math.sin(a), 1.6); ctx.fillStyle = COL.warn; ctx.fill();
+  v.text(`he faces ${fmt(g.yaw, 1)}°`, rp + 14, g.yP + 36, { color: COL.warn, align: 'left' });
+  v.text('waist shaft', rp + 9, g.yP - 8, { align: 'left' });
+}
+/* Close-up of the mesh, centred on his waist shaft, scaled up. */
+function drawDetail() {
+  const v = DT, ctx = v.ctx, g = driveGeom(), rp = P.rp, m = +S.pm, cord = S.drive === 'cord';
+  const Rd = rp * 2.7, half = Rd + 4 * m + 2;
+  v.fit(-half - 2.5 * m, half, -half, half);
+  const s = g.lift, phi = Math.PI - s / rp;            // drum/pinion rotation: the rim at the left moves up with the rack
+  if (!cord) {
+    const pin = gearOutline({ m, z: Math.round(S.pz) });
+    v.poly(pin.pts, 0, 0, phi); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = COL.brass; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = COL.muted; ctx.lineWidth = 1; v.circle(0, 0, rp); ctx.stroke(); ctx.setLineDash([]);
+    // rack teeth: pitch line at x = −rp, teeth point at the pinion, moving with the rod
+    const p = Math.PI * m, tan = Math.tan(20 * DEG), xr = -rp - 1.25 * m, xt = -rp + m, back = xr - 2 * m;
+    const hw0 = p / 4 + 1.25 * m * tan, hw1 = p / 4 - m * tan;
+    ctx.fillStyle = COL['steel-soft']; ctx.strokeStyle = COL.steel; ctx.lineWidth = 1.2;
+    const k0 = Math.floor((-half - s) / p) - 1, k1 = Math.ceil((half - s) / p) + 1;
+    ctx.beginPath(); ctx.moveTo(v.X(back), v.Y(-half));
+    for (let k = k0; k <= k1; k++) { const yc = s + p / 2 + k * p; ctx.lineTo(v.X(xr), v.Y(Math.max(-half, Math.min(half, yc - p / 2)))); if (yc - hw0 > -half && yc + hw0 < half) { ctx.lineTo(v.X(xr), v.Y(yc - hw0)); ctx.lineTo(v.X(xt), v.Y(yc - hw1)); ctx.lineTo(v.X(xt), v.Y(yc + hw1)); ctx.lineTo(v.X(xr), v.Y(yc + hw0)); } ctx.lineTo(v.X(xr), v.Y(Math.max(-half, Math.min(half, yc + p / 2)))); }
+    ctx.lineTo(v.X(back), v.Y(half)); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = COL.muted; ctx.lineWidth = 1; v.line(-rp, -half, -rp, half); ctx.setLineDash([]);
+    v.text('pitch line', -rp - 1.2 * m, half - 2 * m, { align: 'right' });
+    v.text('rack moves ↑', back - 0.3 * m, -half + 2 * m, { color: COL.steel, align: 'right' });
+  } else {
+    // drum, with the cord leaving it tangentially at the left and wrapped round underneath
+    v.circle(0, 0, rp); ctx.fillStyle = COL['brass-soft']; ctx.fill(); ctx.strokeStyle = COL.brass; ctx.lineWidth = 1.4; ctx.stroke();
+    const range = (Math.max(...XY.bars.map(b => b.angle)) - P.angMin) * DEG, wrap = range + 1.2 - s / rp;
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = 2; v.line(-rp, half, -rp, 0);
+    ctx.beginPath(); ctx.arc(v.X(0), v.Y(0), rp * v.S, Math.PI, Math.PI - wrap, true); ctx.stroke();
+    const pa = Math.PI + wrap; v.circle(rp * Math.cos(pa), rp * Math.sin(pa), Math.max(0.4, rp * 0.08)); ctx.fillStyle = COL.ink; ctx.fill();
+    v.text('cord pulled ↑ by the rod', -rp - 0.6, half - 1.5, { color: COL.ink, align: 'right' });
+    // a mark on the drum so the turning is visible
+    v.line(0, 0, rp * 0.8 * Math.cos(phi), rp * 0.8 * Math.sin(phi));
+  }
+  // dial of bar angles
+  ctx.strokeStyle = COL.line; ctx.lineWidth = 1; v.circle(0, 0, Rd); ctx.stroke();
+  for (const b of XY.bars) {
+    const a = (90 - b.angle) * DEG;
+    v.line(Rd * 0.94 * Math.cos(a), Rd * 0.94 * Math.sin(a), Rd * 1.06 * Math.cos(a), Rd * 1.06 * Math.sin(a));
+    ctx.fillStyle = COL.panel; const lx = Rd * 1.17 * Math.cos(a), ly = Rd * 1.17 * Math.sin(a); v.rect(lx - 2.2 * m, ly - 1.1 * m, lx + 2.2 * m, ly + 1.1 * m); ctx.fill();
+    v.text(b.name, Rd * 1.17 * Math.cos(a), Rd * 1.17 * Math.sin(a), { color: COL.ink, font: '600 11px "IBM Plex Sans", system-ui, sans-serif' });
+  }
+  v.circle(0, 0, Math.max(0.5, rp * 0.18)); ctx.fillStyle = COL.ink; ctx.fill();
+  const a = (90 - g.yaw) * DEG; ctx.strokeStyle = COL.warn; ctx.lineWidth = 2.5; v.line(0, 0, Rd * 0.9 * Math.cos(a), Rd * 0.9 * Math.sin(a));
+  v.circle(Rd * 0.9 * Math.cos(a), Rd * 0.9 * Math.sin(a), Math.max(0.5, rp * 0.1)); ctx.fillStyle = COL.warn; ctx.fill();
+}
+function renderSum() {
+  const g = driveGeom(), rp = P.rp, cord = S.drive === 'cord', rad = g.lift / rp;
+  let near = XY.bars[0]; for (const b of XY.bars) if (Math.abs(b.angle - g.yaw) < Math.abs(near.angle - g.yaw)) near = b;
+  const on = Math.abs(near.angle - g.yaw) < 0.05 ? `facing <b>${near.name}</b>` : `turning (nearest ${near.name})`;
+  $('sum').innerHTML = `${cord ? 'cord pulled' : 'rack travel'} <b>${fmt(g.lift, 3)} mm</b> ÷ ${cord ? 'drum' : 'pitch'} radius <b>${fmt(rp, 2)} mm</b> = <b>${fmt(rad, 4)} rad</b> = <b>${fmt(rad / DEG, 2)}°</b><br>`
+    + `start (C6) ${fmt(P.angMin, 1)}° + ${fmt(rad / DEG, 2)}° = he faces <b>${fmt(g.yaw, 2)}°</b>, ${on}`;
+}
+function renderDriveNote() {
+  const cord = S.drive === 'cord', rp = P.rp, tolMm = Math.min(...XY.bars.map(b => b.tol)) * DEG * rp;
+  $('driveNote').innerHTML = cord
+    ? `<b>Cord and drum.</b> A fine cord, tied to an arm on the rod’s end, runs alongside the drum and is wrapped round it and pinned. The cam pushes the rod away, the cord unwinds, and the drum turns him, by exactly cord travel ÷ drum radius, the same as the rack. There are no teeth, so there is <b>no gear play</b>. That matters with only ±${fmt(tolMm, 2)} mm to spare. A cord can only pull, so a coiled spring on the waist shaft turns him back, and the spring on the rod keeps the roller on the cam. The cord must stay taut and must not stretch: use braided fishing line or fine chain.`
+    : `<b>Rack and pinion.</b> The rack’s pitch line rolls on the pinion’s pitch circle without slipping, so rotation = travel ÷ pitch radius, a straight line with no crank-angle distortion. He only turns ${fmt(Math.max(...XY.bars.map(b => b.angle)) - P.angMin, 0)}°, less than a third of a turn, so a <b>gear sector</b> of about ${Math.ceil((Math.max(...XY.bars.map(b => b.angle)) - P.angMin) / 360 * Math.round(S.pz)) + 2} teeth is enough. Gear play eats into the ±${fmt(tolMm, 2)} mm allowance; the return spring keeps the teeth pressed on one side so the play doesn’t wander.`;
+}
+
 function drawChart(id, fn, opts) {
   const cv = $(id), w = cv.clientWidth, h = cv.clientHeight, dpr = window.devicePixelRatio || 1;
   if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
@@ -465,8 +596,9 @@ function partRows() {
   return [
     ['Turn cam', `base Ø ${fmt(2 * T.base, 1)}, outside Ø ${fmt(2 * T.outerR, 1)}, travel ${fmt(T.maxLift, 2)}`, `${fmt(2 * T.rollerR, 0)} mm roller, rack follower`],
     ['Strike cam (snail)', `base Ø ${fmt(2 * St.base, 1)}, outside Ø ${fmt(2 * St.outerR, 1)}, lift ${fmt(St.maxLift, 2)}`, `${fmt(2 * St.rollerR, 0)} mm roller, rod up the hollow shaft`],
-    ['Pinion on his waist', `${Math.round(S.pz)} teeth, module ${S.pm}, pitch Ø ${fmt(2 * pin.rp, 1)}`, `turns ${fmt(1 / (P.rp * DEG), 2)}° per mm of rack`],
-    ['Rack', `module ${S.pm}, at least ${fmt(T.maxLift + 6, 1)} long`, 'on the end of the turn follower rod'],
+    ...(S.drive === 'cord'
+      ? [['Drum on his waist', `Ø ${fmt(2 * P.rp, 2)} at the cord’s centre line`, `turns ${fmt(1 / (P.rp * DEG), 2)}° per mm of cord`], ['Cord', `about ${fmt(T.maxLift + 40, 0)} long, non-stretch (braided line or fine chain)`, 'pinned to the drum, tied to the rod’s end'], ['Coiled return spring', 'on the waist shaft', 'turns him back; the cord can only pull']]
+      : [['Pinion on his waist', `${Math.round(S.pz)} teeth, module ${S.pm}, pitch Ø ${fmt(2 * pin.rp, 1)}`, `turns ${fmt(1 / (P.rp * DEG), 2)}° per mm of rack`], ['Rack', `module ${S.pm}, at least ${fmt(T.maxLift + 6, 1)} long`, 'on the end of the turn follower rod']]),
     ['Mallet lever', `${fmt(P.lever, 1)} from pivot to rod`, `lifts the ${XY.R} mm arm ${fmt(XY.R / P.lever, 1)}× the rod’s travel`],
     ['Shaft', `${P.B} beats per turn = ${fmt(P.beat, 2)}° of cam per beat`, `${fmt(P.B / clamp(S.seconds, 4, 30) * 60, 0)} beats per minute at ${S.seconds} s per tune`],
   ];
@@ -474,7 +606,7 @@ function partRows() {
 function renderParts() { $('parts').innerHTML = `<thead><tr><th>Part</th><th>Size (mm)</th><th>Notes</th></tr></thead><tbody>${partRows().map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody>`; }
 function buildSVG() {
   const f = v => (Math.round(v * 1000) / 1000).toString(), T = P.turnCam, St = P.strikeCam, pin = gearOutline({ m: +S.pm, z: Math.round(S.pz) });
-  const gap = 8, items = [{ pts: T.surface, r: T.outerR, mark: T.base - T.rollerR - 3, at: T.followerAt, label: 'Turn cam' }, { pts: St.surface, r: St.outerR, mark: St.base - St.rollerR - 3, at: St.followerAt, label: 'Strike cam' }, { pts: pin.pts, r: pin.ra, label: `Pinion ${Math.round(S.pz)}T m${S.pm}`, bore: 1.5 }];
+  const gap = 8, items = [{ pts: T.surface, r: T.outerR, mark: T.base - T.rollerR - 3, at: T.followerAt, label: 'Turn cam' }, { pts: St.surface, r: St.outerR, mark: St.base - St.rollerR - 3, at: St.followerAt, label: 'Strike cam' }, S.drive === 'cord' ? { pts: Array.from({ length: 180 }, (_, i) => [P.rp * Math.cos(i * TAU / 180), P.rp * Math.sin(i * TAU / 180)]), r: P.rp, label: `Drum Ø${fmt(2 * P.rp, 1)}`, bore: Math.min(1.5, P.rp * 0.4) } : { pts: pin.pts, r: pin.ra, label: `Pinion ${Math.round(S.pz)}T m${S.pm}`, bore: 1.5 }];
   const H = Math.max(...items.map(p => 2 * p.r)) + 2 * gap + 8, mid = gap + Math.max(...items.map(p => p.r)); let x = gap; const cut = [], eng = [];
   for (const p of items) {
     const cx = x + p.r, cy = mid, bore = p.bore || 2;
@@ -512,7 +644,7 @@ function ring(f) {
 /* ---------- Loop and controls ---------- */
 function drawAll() {
   if (!P || P.error) return;
-  drawTop(); drawCams(); drawCharts(); renderHeard();
+  drawTop(); drawCams(); drawDrive(); drawDetail(); renderSum(); drawCharts(); renderHeard();
   const t = ((theta % 360) + 360) % 360;
   $('angleOut').textContent = fmt(t, 1) + '°';
   if (document.activeElement !== $('scrub')) $('scrub').value = t.toFixed(1);
@@ -542,6 +674,8 @@ $('speed').oninput = e => { S.seconds = +e.target.value; $('speedOut').textConte
 const NUMS = ['pz', 'pm', 'tb', 'sb', 'lever', 'raise', 'clear', 'move', 'rise'];
 $('tlaw').innerHTML = $('slaw').innerHTML = Object.entries(LAWS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
 function bind() {
+  $('driveType').value = S.drive || 'rack';
+  $('driveType').onchange = e => { S.drive = e.target.value; update(); };
   $('tune').value = S.tune; $('tlaw').value = S.tlaw; $('slaw').value = S.slaw; NUMS.forEach(k => $(k).value = S[k]);
   $('speed').value = S.seconds; $('speedOut').textContent = S.seconds + ' s';
   $('tune').oninput = e => { S.tune = e.target.value; update(); };
@@ -553,7 +687,7 @@ function update() {
   build(); save();
   if (P.error) { $('checks').innerHTML = `<li><span class="chip warn">Check</span><span class="what">${esc(P.error)}</span></li>`; return; }
   if (P.bad.length) flash(`Skipped: ${P.bad.join(' ')}. Use C D E F G A B C', with a number for longer notes.`);
-  renderChecks(); renderParts(); drawAll();
+  renderChecks(); renderParts(); renderDriveNote(); drawAll();
 }
 function flash(m) { $('status').textContent = m; clearTimeout(flash.t); flash.t = setTimeout(() => $('status').textContent = '', 5000); }
 function copyText(t, okMsg) {
